@@ -27,22 +27,25 @@ namespace CyNewsCorner.Controllers
         }
 
         [HttpGet("list")]
-        public NewsResponse GetNewsList(NewsRequest request)
+        public NewsResponse GetAllNewsList()
         {
-            var response = new NewsResponse();
+            var response = new NewsResponse();  
  
-            var newsList = _news.GetNews(request.SelectedNewsSources, request.CategoryId);
+            var newsList = _news.GetAllNews();
             response.PostList = newsList;
 
             return response;
         }
 
-        private List<Post> PopulateNewsList() {
-            var news = new List<Post>();
-            //news = _news.GetAllNews();
-            return news;
+        [HttpGet("list/filtered")]
+        public NewsResponse GetNewsList(NewsRequest request)
+        {
+            var response = new NewsResponse();
+
+            var newsList = _news.GetNewsFiltered(request.SelectedNewsSources, request.CategoryId);
+            response.PostList = newsList;
+
+            return response;
         }
-
     }
-
 }

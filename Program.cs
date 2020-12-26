@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using CyNewsCorner.Services;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Quartz;
+using System;
+using System.Threading.Tasks;
 
 namespace CyNewsCorner
 {
@@ -24,9 +20,5 @@ namespace CyNewsCorner
                 {
                     webBuilder.UseStartup<Startup>();
                 });
-                //.ConfigureServices(services =>
-                //{
-                //    services.AddHostedService<NewsBackgroundService>();
-                //});
     }
 }
