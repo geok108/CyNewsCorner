@@ -49,10 +49,6 @@ C:\Users\georg\source\repos\CyNewsCorner\bin\Debug\netcoreapp3.1\Microsoft.Ident
 C:\Users\georg\source\repos\CyNewsCorner\bin\Debug\netcoreapp3.1\Microsoft.IdentityModel.Tokens.dll
 C:\Users\georg\source\repos\CyNewsCorner\bin\Debug\netcoreapp3.1\Microsoft.Win32.SystemEvents.dll
 C:\Users\georg\source\repos\CyNewsCorner\bin\Debug\netcoreapp3.1\Newtonsoft.Json.dll
-C:\Users\georg\source\repos\CyNewsCorner\bin\Debug\netcoreapp3.1\Quartz.dll
-C:\Users\georg\source\repos\CyNewsCorner\bin\Debug\netcoreapp3.1\Quartz.AspNetCore.dll
-C:\Users\georg\source\repos\CyNewsCorner\bin\Debug\netcoreapp3.1\Quartz.Extensions.DependencyInjection.dll
-C:\Users\georg\source\repos\CyNewsCorner\bin\Debug\netcoreapp3.1\Quartz.Extensions.Hosting.dll
 C:\Users\georg\source\repos\CyNewsCorner\bin\Debug\netcoreapp3.1\System.Collections.Immutable.dll
 C:\Users\georg\source\repos\CyNewsCorner\bin\Debug\netcoreapp3.1\System.ComponentModel.Annotations.dll
 C:\Users\georg\source\repos\CyNewsCorner\bin\Debug\netcoreapp3.1\System.Configuration.ConfigurationManager.dll
@@ -85,3 +81,4 @@ C:\Users\georg\source\repos\CyNewsCorner\obj\Debug\netcoreapp3.1\CyNewsCorner.Ra
 C:\Users\georg\source\repos\CyNewsCorner\obj\Debug\netcoreapp3.1\CyNewsCorner.csproj.CopyComplete
 C:\Users\georg\source\repos\CyNewsCorner\obj\Debug\netcoreapp3.1\CyNewsCorner.dll
 C:\Users\georg\source\repos\CyNewsCorner\obj\Debug\netcoreapp3.1\CyNewsCorner.pdb
+C:\Users\georg\source\repos\CyNewsCorner\obj\Debug\netcoreapp3.1\CyNewsCorner.csprojAssemblyReference.cache

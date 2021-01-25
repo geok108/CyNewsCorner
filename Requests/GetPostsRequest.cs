@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace CyNewsCorner.Requests
 {
-    public class NewsRequest
+    public class GetPostsRequest
     {
         public string[] SelectedNewsSources { get; set; }
         public int CategoryId { get; set; }

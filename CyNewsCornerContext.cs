@@ -1,8 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CyNewsCorner
 {
@@ -17,5 +13,7 @@ namespace CyNewsCorner
         }
         public DbSet<DataModels.NewsSource> Sources { get; set; }
         public DbSet<DataModels.Category> Categories { get; set; }
+        public DbSet<DataModels.Post> Posts { get; set; }
+
     }
 }
