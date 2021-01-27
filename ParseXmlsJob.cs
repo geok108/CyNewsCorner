@@ -84,6 +84,7 @@ namespace CyNewsCorner
             var postsList = ParseXmls(sources);
             foreach (var n in postsList)
             {
+                //check first if post exists
                 Db.Posts.Add(n);
             }
             Db.SaveChanges();
@@ -99,8 +100,9 @@ namespace CyNewsCorner
             var response = request.GetResponse() as HttpWebResponse;
             if (response == null)
                 res = false;
-            
-            if(string.Equals(response.ContentType, "application/xml; charset=utf-8", StringComparison.OrdinalIgnoreCase) || string.Equals(response.ContentType, "application/rss+xml; charset=utf-8", StringComparison.OrdinalIgnoreCase))
+
+            var acceptedContentTypes = Db.AcceptedContentTypes.Select(q => q.ContentType).ToList();
+            if (acceptedContentTypes.Any(s => s.Equals(response.ContentType, StringComparison.OrdinalIgnoreCase)))
                 res = true;
 
             if(!res)

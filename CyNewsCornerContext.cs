@@ -14,6 +14,7 @@ namespace CyNewsCorner
         public DbSet<DataModels.NewsSource> Sources { get; set; }
         public DbSet<DataModels.Category> Categories { get; set; }
         public DbSet<DataModels.Post> Posts { get; set; }
+        public DbSet<DataModels.AcceptedContentType> AcceptedContentTypes { get; set; }
 
     }
 }
