@@ -10,9 +10,6 @@ namespace CyNewsCorner.Services
     public class PostsService
     {
         private readonly CyNewsCornerContext Db;
-
-        private static List<DataModels.Post> postsList { get; set; }
-
         public PostsService(CyNewsCornerContext context)
         {
             Db = context;
@@ -33,9 +30,7 @@ namespace CyNewsCorner.Services
                     sources = Db.Sources.Where(q => selectedSources.Contains(q.Name)).Select(q => q.RssUrl).ToList();
                 }
 
-                if (postsList == null || postsList.Count == 0) {
-                    postsList = Db.Posts.ToList();
-                }
+                var postsList = Db.Posts.ToList();
                 
                 return postsList;
             }
@@ -47,14 +42,7 @@ namespace CyNewsCorner.Services
         public List<DataModels.Post> GetAllNews() {
             try
             {
-                var response = new GetPostsResponse();
-                var sources = Db.Sources.Select(q => q.RssUrl).ToList();
-
-                if (postsList == null || postsList.Count == 0)
-                {
-                    postsList = Db.Posts.ToList();
-                }
-
+                var postsList = Db.Posts.ToList();
                 return postsList;
             }
             catch (Exception ex)

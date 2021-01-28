@@ -23,6 +23,9 @@ namespace CyNewsCorner.DataModels
         public string Category { get; set; }
         [Column("description")]
         public string Description { get; set; }
+        [Column("added_on")]
+        public DateTime AddedOn { get; set; }
+
     }
-  
+
 }

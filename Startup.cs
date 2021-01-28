@@ -19,7 +19,7 @@ namespace CyNewsCorner
         {
             services.AddDbContext<CyNewsCornerContext>(ServiceLifetime.Singleton);
             services.AddControllers();
-            services.AddHostedService<ParseXmlsJob>();
+            services.AddHostedService<BackgroundService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

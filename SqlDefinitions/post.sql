@@ -16,6 +16,7 @@ CREATE TABLE [dbo].[post](
 	[url] [text] COLLATE SQL_Latin1_General_CP1253_CI_AI NOT NULL,
 	[image] [varchar](255) NULL,
 	[publish_datetime] [varchar](255) NULL,
+	[added_on] [datetime] NULL
 PRIMARY KEY CLUSTERED 
 (
 	[id] ASC
