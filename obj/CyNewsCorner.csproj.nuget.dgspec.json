@@ -1,27 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\georg\\source\\repos\\CyNewsCorner\\CyNewsCorner.csproj": {}
+    "/home/george/dev/CyNewsCorner/CyNewsCorner.csproj": {}
   },
   "projects": {
-    "C:\\Users\\georg\\source\\repos\\CyNewsCorner\\CyNewsCorner.csproj": {
+    "/home/george/dev/CyNewsCorner/CyNewsCorner.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\georg\\source\\repos\\CyNewsCorner\\CyNewsCorner.csproj",
+        "projectUniqueName": "/home/george/dev/CyNewsCorner/CyNewsCorner.csproj",
         "projectName": "CyNewsCorner",
-        "projectPath": "C:\\Users\\georg\\source\\repos\\CyNewsCorner\\CyNewsCorner.csproj",
-        "packagesPath": "C:\\Users\\georg\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\georg\\source\\repos\\CyNewsCorner\\obj\\",
+        "projectPath": "/home/george/dev/CyNewsCorner/CyNewsCorner.csproj",
+        "packagesPath": "/home/george/.nuget/packages/",
+        "outputPath": "/home/george/dev/CyNewsCorner/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\georg\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/home/george/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "netcoreapp3.1"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -63,6 +61,10 @@
             "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": {
               "target": "Package",
               "version": "[1.9.10, )"
+            },
+            "StackExchange.Redis": {
+              "target": "Package",
+              "version": "[2.2.4, )"
             }
           },
           "imports": [
@@ -83,7 +85,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.100\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/snap/dotnet-sdk/current/sdk/3.1.407/RuntimeIdentifierGraph.json"
         }
       }
     }

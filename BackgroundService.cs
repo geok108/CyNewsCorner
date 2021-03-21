@@ -3,24 +3,41 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Newtonsoft.Json;
+using StackExchange.Redis;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace CyNewsCorner
 {
     public class BackgroundService: IHostedService, IDisposable
     {
-        private readonly CyNewsCornerContext Db;
         private Timer timer;
         private int number;
+        private IDatabase RedisDb{get;set;}
+        private IServer RedisServer { get; set; }
+        private List<string> Sources { get; set; }
         public BackgroundService() {
-            var contextOptions = new DbContextOptionsBuilder<CyNewsCornerContext>()
-            .Options;
+            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost:6379,allowAdmin=true");
 
-            Db = new CyNewsCornerContext(contextOptions);
+            IDatabase db = redis.GetDatabase();
+            RedisDb = db;
+            RedisServer = redis.GetServer("localhost", 6379);
+     
+            using (var reader = new StreamReader(@"news_sources.csv"))
+            {
+                while (!reader.EndOfStream)
+                {
+                    var line = reader.ReadLine();
+                    var values = line.Split(",").ToList();
+                    Sources = values;
+                }
+            }
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -49,37 +66,44 @@ namespace CyNewsCorner
         }
 
         private void SavePosts() {
-            var posts = Db.Posts.Select(q => q.Url).ToList();
-            var sources = Db.Sources.Select(q => q.RssUrl).ToList();
-            var postsList = ParseXmls(sources);
+            var postsList = ParseXmls();
+            var keys = RedisServer.Keys()
+                .Select(key => (string)key).ToArray();
+
+            var posts = new Dictionary<string, string>();
+            foreach (var key in keys)
+            {
+                posts.Add(key, RedisDb.StringGet(key));
+            }
             foreach (var n in postsList)
             {
                 //check first if post exists
-                if (posts.Any(q => q.Contains(n.Url)))
-                    continue;
-                Db.Posts.Add(n);
+                 if (posts.Select(q => q.Key).Any(q => q.Contains(n.Url)))
+                     continue;
+
+                var jsonString = JsonSerializer.Serialize(n);
+                RedisDb.StringSet(n.Url, jsonString);
+                posts.Add(n.Url, jsonString);
             }
-            Db.SaveChanges();
             Console.Out.WriteLineAsync("Saving posts process completed.");
         }
 
         private void DeleteOldPosts() {
-            var postsToRemove = Db.Posts.Where(q => q.AddedOn < (DateTime.Today.AddDays(-2)) ).ToArray();
-            Db.Posts.RemoveRange(postsToRemove);
+            RedisServer.FlushDatabase(RedisDb.Database);
         }
 
-        public List<Post> ParseXmls(List<string> sources)
+        public List<Post> ParseXmls()
         {
             var news = new List<DataModels.Post>();
 
-            foreach (var source in sources)
+            foreach (var source in Sources)
             {
                 var startTime = DateTime.UtcNow;
-                if (!isValidResponse(source))
-                {
-                    Console.Out.WriteLineAsync(string.Format("Source {0} is invalid.", source));
-                    continue;
-                }
+                // if (!isValidResponse(source))
+                // {
+                //     Console.Out.WriteLineAsync(string.Format("Source {0} is invalid.", source));
+                //     continue;
+                // }
 
                 XDocument doc = XDocument.Load(source);
                 var endTime = DateTime.UtcNow;
@@ -113,9 +137,9 @@ namespace CyNewsCorner
             if (response == null)
                 res = false;
 
-            var acceptedContentTypes = Db.AcceptedContentTypes.Select(q => q.ContentType).ToList();
-            if (acceptedContentTypes.Any(s => s.Equals(response.ContentType, StringComparison.OrdinalIgnoreCase)))
-                res = true;
+            // var acceptedContentTypes = Db.AcceptedContentTypes.Select(q => q.ContentType).ToList();
+            // if (acceptedContentTypes.Any(s => s.Equals(response.ContentType, StringComparison.OrdinalIgnoreCase)))
+            //     res = true;
 
             if(!res)
                 Console.Out.WriteLineAsync(string.Format("Missed source content type: {0}", response.ContentType));

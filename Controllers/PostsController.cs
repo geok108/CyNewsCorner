@@ -1,9 +1,14 @@
-﻿using CyNewsCorner.Requests;
+﻿using System;
+using CyNewsCorner.Requests;
 using CyNewsCorner.Responses;
 using CyNewsCorner.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using Newtonsoft.Json.Serialization;
+using StackExchange.Redis;
 
 namespace CyNewsCorner.Controllers
 {
@@ -12,11 +17,13 @@ namespace CyNewsCorner.Controllers
     public class PostsController : ControllerBase
     {
         private readonly ILogger<PostsController> _logger;
-        private PostsService _news { get; set; }
-        public PostsController(ILogger<PostsController> logger, CyNewsCornerContext context)
+        private readonly IDatabase _cacheDb;
+        private readonly IServer _cacheServer;
+        public PostsController(ILogger<PostsController> logger, IConnectionMultiplexer redisConn)
         {
             _logger = logger;
-            _news = new PostsService(context);
+            _cacheDb = redisConn.GetDatabase();
+            _cacheServer = redisConn.GetServer("localhost", 6379);
         }
 
         [HttpGet("status")]
@@ -27,41 +34,39 @@ namespace CyNewsCorner.Controllers
         [HttpGet("list")]
         public GetPostsResponse GetAllNewsList()
         {
-            var response = new GetPostsResponse();  
- 
-            var newsList = _news.GetAllNews();
-            response.PostList = PopulatePostsResponse(newsList);
-
+            var response = new GetPostsResponse();
+            var newsList = GetAllNews();
+            response.PostList = newsList;
             return response;
         }
 
+        private List<Post> GetAllNews() {
+            try
+            {
+                var postsList = new List<Post>();
+                foreach (var key in _cacheServer.Keys())
+                {
+                    var deserializedJsonString = JsonSerializer.Deserialize<Post>(_cacheDb.StringGet(key));
+                    postsList.Add(deserializedJsonString);
+                }
+
+                return postsList;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Oops..Exception!", ex);
+            }
+        }
         [HttpGet("list/filtered")]
         public GetPostsResponse GetNewsList(GetPostsRequest request)
         {
             var response = new GetPostsResponse();
 
-            var newsList = _news.GetNewsFiltered(request.SelectedNewsSources, request.CategoryId);
-            response.PostList = PopulatePostsResponse(newsList);
+            // var newsList = _news.GetNewsFiltered(request.SelectedNewsSources, request.CategoryId);
+            // response.PostList = PopulatePostsResponse(newsList);
 
             return response;
         }
-
-        private List<Post> PopulatePostsResponse(List<DataModels.Post> posts) {
-            var res = new List<Post>();
-
-            foreach (var post in posts) {
-                var p = new Post();
-                p.title = post.Title;
-                p.category = post.Category;
-                p.description = post.Description;
-                p.image = post.Image;
-                p.publishDatetime = post.PublishDatetime;
-                p.url = post.Url;
-
-                res.Add(p);
-            }
-
-            return res;
-        }
+      
     }
 }

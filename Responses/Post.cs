@@ -7,11 +7,11 @@ namespace CyNewsCorner.Responses
 {
     public class Post
     {
-        public string title { get; set; }
-        public string category { get; set; }
-        public string url { get; set; }
-        public string description { get; set; }
-        public string publishDatetime { get; set; }
-        public string image { get; set; }
+        public string Title { get; set; }
+        public string Category { get; set; }
+        public string Url { get; set; }
+        public string Description { get; set; }
+        public string PublishDatetime { get; set; }
+        public string Image { get; set; }
     }
 }
