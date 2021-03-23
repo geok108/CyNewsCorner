@@ -8,6 +8,5 @@ namespace CyNewsCorner.Requests
     public class GetPostsRequest
     {
         public string[] SelectedNewsSources { get; set; }
-        public int CategoryId { get; set; }
     }
 }

@@ -61,12 +61,10 @@ namespace CyNewsCorner.Controllers
         public GetPostsResponse GetNewsList(GetPostsRequest request)
         {
             var response = new GetPostsResponse();
-
-            // var newsList = _news.GetNewsFiltered(request.SelectedNewsSources, request.CategoryId);
-            // response.PostList = PopulatePostsResponse(newsList);
+            var postList = GetAllNews();
+            response.PostList = postList.FindAll(q => request.SelectedNewsSources.Contains(q.Url));
 
             return response;
         }
-      
     }
 }
