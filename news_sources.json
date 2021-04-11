@@ -1,0 +1,22 @@
+﻿{
+  "sources": [
+    {
+      "id": 1,
+      "name": "Sigmalive",
+      "rssUrl": "https://www.sigmalive.com/rss",
+      "isActive": true
+    },
+    {
+      "id": 2,
+      "name": "Cyprus Times",
+      "rssUrl": "https://cyprustimes.com/feed/",
+      "isActive": true
+    },
+    {
+      "id": 3,
+      "name": "Omegalive",
+      "rssUrl": "https://omegalive.com.cy/kypros-feed.xml",
+      "isActive": true
+    }
+  ]
+}

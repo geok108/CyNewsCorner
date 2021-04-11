@@ -12,6 +12,5 @@ namespace CyNewsCorner.DataModels
         public string Name { get; set; } 
         public string RssUrl { get; set; }
         public bool IsActive { get; set; }
-        public int CategoryId { get; set; }
     }
 }

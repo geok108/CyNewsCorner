@@ -1,13 +1,15 @@
 ﻿using System;
 using CyNewsCorner.Requests;
 using CyNewsCorner.Responses;
-using CyNewsCorner.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using Newtonsoft.Json.Serialization;
+using FluentValidation;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore.Update;
 using StackExchange.Redis;
 
 namespace CyNewsCorner.Controllers
@@ -17,8 +19,11 @@ namespace CyNewsCorner.Controllers
     public class PostsController : ControllerBase
     {
         private readonly ILogger<PostsController> _logger;
+        
         private readonly IDatabase _cacheDb;
+        
         private readonly IServer _cacheServer;
+        
         public PostsController(ILogger<PostsController> logger, IConnectionMultiplexer redisConn)
         {
             _logger = logger;
@@ -30,41 +35,48 @@ namespace CyNewsCorner.Controllers
         public string GetStatus() {
             return "Status: UP!";
         }
-
+        
         [HttpGet("list")]
-        public GetPostsResponse GetAllNewsList()
+        public GetPostsResponse GetNewsList(GetPostListRequest request)
         {
-            var response = new GetPostsResponse();
-            var newsList = GetAllNews();
-            response.PostList = newsList;
-            return response;
-        }
-
-        private List<Post> GetAllNews() {
             try
             {
-                var postsList = new List<Post>();
-                foreach (var key in _cacheServer.Keys())
+                _logger.LogInformation("Getting filtered news...");
+
+                var validator = new GetPostListRequestValidator();
+                var results = validator.Validate(request);
+                if (results.Errors.Count > 0)
                 {
-                    var deserializedJsonString = JsonSerializer.Deserialize<Post>(_cacheDb.StringGet(key));
-                    postsList.Add(deserializedJsonString);
+                    throw new ValidationException(results.Errors);
                 }
 
-                return postsList;
+                var response = new GetPostsResponse();
+                var postList = GetAllNews();
+                
+                response.PostList = request.SelectedNewsSources == null ||request.SelectedNewsSources.Length == 0 ? postList : postList.FindAll(q => request.SelectedNewsSources.Contains(q.Source));
+                _logger.LogInformation("Getting filtered news Succeeded.");
+
+                return response;
+            }
+            catch (ValidationException ex)
+            {
+                _logger.LogError(ex.ToString());
+                Response.StatusCode = 400;
+                var errorRes = new GetPostsResponse();
+                errorRes.ErrorMessage = string.Join(", ", ex.Errors) + ".";
+                return errorRes;
             }
             catch (Exception ex)
             {
-                throw new Exception("Oops..Exception!", ex);
+                _logger.LogError(ex.ToString());
+                Response.StatusCode = 400;
+                return new GetPostsResponse();
             }
         }
-        [HttpGet("list/filtered")]
-        public GetPostsResponse GetNewsList(GetPostsRequest request)
+        
+        private List<Post> GetAllNews()
         {
-            var response = new GetPostsResponse();
-            var postList = GetAllNews();
-            response.PostList = postList.FindAll(q => request.SelectedNewsSources.Contains(q.Url));
-
-            return response;
+            return _cacheServer.Keys().Select(key => JsonSerializer.Deserialize<Post>(_cacheDb.StringGet(key))).ToList();
         }
     }
 }

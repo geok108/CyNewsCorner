@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
-using CyNewsCorner.Services;
+using FluentValidation.AspNetCore;
 using StackExchange.Redis;
 
 namespace CyNewsCorner
@@ -22,7 +22,8 @@ namespace CyNewsCorner
             // services.AddDbContext<CyNewsCornerContext>(ServiceLifetime.Singleton);
             services.AddControllers();
             services.AddHostedService<BackgroundService>();
-
+            services.AddMvc().AddFluentValidation();
+            //redis
             ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost:6379,allowAdmin=true");
             services.AddSingleton<IConnectionMultiplexer>(redis);
         }

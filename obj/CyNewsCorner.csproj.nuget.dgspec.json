@@ -1,25 +1,27 @@
 {
   "format": 1,
   "restore": {
-    "/home/george/dev/CyNewsCorner/CyNewsCorner.csproj": {}
+    "C:\\Users\\georg\\source\\repos\\CyNewsCorner\\CyNewsCorner.csproj": {}
   },
   "projects": {
-    "/home/george/dev/CyNewsCorner/CyNewsCorner.csproj": {
+    "C:\\Users\\georg\\source\\repos\\CyNewsCorner\\CyNewsCorner.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/george/dev/CyNewsCorner/CyNewsCorner.csproj",
+        "projectUniqueName": "C:\\Users\\georg\\source\\repos\\CyNewsCorner\\CyNewsCorner.csproj",
         "projectName": "CyNewsCorner",
-        "projectPath": "/home/george/dev/CyNewsCorner/CyNewsCorner.csproj",
-        "packagesPath": "/home/george/.nuget/packages/",
-        "outputPath": "/home/george/dev/CyNewsCorner/obj/",
+        "projectPath": "C:\\Users\\georg\\source\\repos\\CyNewsCorner\\CyNewsCorner.csproj",
+        "packagesPath": "C:\\Users\\georg\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\georg\\source\\repos\\CyNewsCorner\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/george/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\georg\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "netcoreapp3.1"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -36,6 +38,10 @@
       "frameworks": {
         "netcoreapp3.1": {
           "dependencies": {
+            "FluentValidation.AspNetCore": {
+              "target": "Package",
+              "version": "[10.0.1, )"
+            },
             "Microsoft.Bcl.AsyncInterfaces": {
               "target": "Package",
               "version": "[5.0.0, )"
@@ -62,6 +68,14 @@
               "target": "Package",
               "version": "[1.9.10, )"
             },
+            "NLog": {
+              "target": "Package",
+              "version": "[4.7.9, )"
+            },
+            "NLog.Web.AspNetCore": {
+              "target": "Package",
+              "version": "[4.12.0, )"
+            },
             "StackExchange.Redis": {
               "target": "Package",
               "version": "[2.2.4, )"
@@ -85,7 +99,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/snap/dotnet-sdk/current/sdk/3.1.407/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.100\\RuntimeIdentifierGraph.json"
         }
       }
     }

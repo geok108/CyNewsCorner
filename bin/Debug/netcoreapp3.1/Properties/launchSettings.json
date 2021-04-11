@@ -19,7 +19,7 @@
     },
     "CyNewsCorner": {
       "commandName": "Project",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "news/status",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
