@@ -35,7 +35,16 @@ namespace CyNewsCorner.Controllers
         public string GetStatus() {
             return "Status: UP!";
         }
-        
+
+        [HttpPost("cache/clear")]
+        public void FlushCache()
+        {
+            _logger.LogInformation("Flushing cache...");
+
+            _cacheServer.FlushDatabase(_cacheDb.Database);
+            _logger.LogInformation("Flushing cache succeeded.");
+        }
+
         [HttpGet("list")]
         public GetPostsResponse GetNewsList(GetPostListRequest request)
         {

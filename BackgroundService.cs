@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -20,12 +21,17 @@ namespace CyNewsCorner
     {
         private readonly ILogger<BackgroundService> _logger;
 
-        private Timer timer;
+        private Timer _saveTimer;
+        private Timer _flushTimer;
         
-        private int number;
+        private int _number;
+        
         private IDatabase RedisDb{get;set;}
+        
         private IServer RedisServer { get; set; }
+        
         private List<NewsSource> Sources { get; set; }
+        
         public BackgroundService(ILogger<BackgroundService> logger) {
             _logger = logger;
 
@@ -85,15 +91,23 @@ namespace CyNewsCorner
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            timer = new Timer(o => {
-                Interlocked.Increment(ref number);
-                Console.Out.WriteLineAsync("Greetings from HelloJob!");
-                DeleteOldPosts();
+            _saveTimer = new Timer(o => {
+                Interlocked.Increment(ref _number);
+                Console.Out.WriteLineAsync("Starting saving in cache..");
                 SavePosts();
             },
             null,
             TimeSpan.Zero,
-            TimeSpan.FromMinutes(5));
+            TimeSpan.FromMinutes(1));
+            
+            _flushTimer = new Timer(o => {
+                Interlocked.Increment(ref _number);
+                Console.Out.WriteLineAsync("Starting flushing cache..");
+                DeleteOldPosts();
+            },
+            null,
+            TimeSpan.Zero,
+            TimeSpan.FromMinutes(3));
 
             return Task.CompletedTask;
         }
@@ -105,10 +119,13 @@ namespace CyNewsCorner
 
         public void Dispose()
         {
-            timer?.Dispose();
+            _saveTimer?.Dispose();
+            _flushTimer?.Dispose();
         }
-
-        public List<Post> ParseXmls()
+        
+        #region Private
+        
+        private List<Post> ParseXmls()
         {
             _logger.LogInformation("Parsing news xmls...");
 
@@ -140,7 +157,7 @@ namespace CyNewsCorner
                             post.Image = e.Element("enclosure") == null
                                 ? ""
                                 : e.Element("enclosure").Attribute("url").Value;
-                            post.PublishDatetime = e.Element("pubDate") == null ? "" : e.Element("pubDate").Value;
+                            post.PublishDatetime = e.Element("pubDate") == null ? "" : Convert.ToDateTime(e.Element("pubDate").Value, CultureInfo.CurrentCulture).ToString("dd/MM/yyyy hh:MM:ss");
                             post.AddedOn = DateTime.UtcNow;
                             news.Add(post);
                         }
@@ -156,8 +173,6 @@ namespace CyNewsCorner
             }
         }
 
-        #region Private
-       
         private bool isValidResponse(string url) {
             var request = HttpWebRequest.Create(url) as HttpWebRequest;
             var res = false;
@@ -212,7 +227,6 @@ namespace CyNewsCorner
 
                     var jsonString = JsonSerializer.Serialize(n);
                     RedisDb.StringSet(n.Url, jsonString);
-                    posts.Add(n.Url, jsonString);
                 }
 
                 Console.Out.WriteLineAsync("Saving posts process completed.");
@@ -225,7 +239,8 @@ namespace CyNewsCorner
             }
         }
 
-        private void DeleteOldPosts() {
+        private void DeleteOldPosts()
+        {
             RedisServer.FlushDatabase(RedisDb.Database);
             _logger.LogInformation("Old posts flushed from cache.");
         }

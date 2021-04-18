@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "sbGQlCaVgCib9HMct7SZDIrkmHU5UPe0SAEngmd99yt98LZRT6UNCJwLOaSZSrN+w4eagHKAbg8IuX+9GQM5Ag==",
+  "dgSpecHash": "KEPtQFfAfhn1IShWtvUjTq0O/Qx8usZsvmS1DMK9NUzHL6qiwcXv/Qeou1PIbGM0vFg69oWxxWJ3v2d1M4L8mQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\georg\\source\\repos\\CyNewsCorner\\CyNewsCorner.csproj",
+  "projectFilePath": "C:\\development\\CyNewsCorner\\CyNewsCorner.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\georg\\.nuget\\packages\\fluentvalidation\\10.0.1\\fluentvalidation.10.0.1.nupkg.sha512",
     "C:\\Users\\georg\\.nuget\\packages\\fluentvalidation.aspnetcore\\10.0.1\\fluentvalidation.aspnetcore.10.0.1.nupkg.sha512",

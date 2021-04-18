@@ -6840,11 +6840,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\georg\\source\\repos\\CyNewsCorner\\CyNewsCorner.csproj",
+      "projectUniqueName": "C:\\development\\CyNewsCorner\\CyNewsCorner.csproj",
       "projectName": "CyNewsCorner",
-      "projectPath": "C:\\Users\\georg\\source\\repos\\CyNewsCorner\\CyNewsCorner.csproj",
+      "projectPath": "C:\\development\\CyNewsCorner\\CyNewsCorner.csproj",
       "packagesPath": "C:\\Users\\georg\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\georg\\source\\repos\\CyNewsCorner\\obj\\",
+      "outputPath": "C:\\development\\CyNewsCorner\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\georg\\AppData\\Roaming\\NuGet\\NuGet.Config",
