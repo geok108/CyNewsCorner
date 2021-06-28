@@ -46,7 +46,7 @@ namespace CyNewsCorner.Controllers
         }
 
         [HttpGet("list")]
-        public GetPostsResponse GetNewsList(GetPostListRequest request)
+        public GetPostsResponse GetNewsList([FromQuery]GetPostListRequest request)
         {
             try
             {
