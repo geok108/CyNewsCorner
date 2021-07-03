@@ -91,6 +91,15 @@ namespace CyNewsCorner
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
+            _flushTimer = new Timer(o => {
+                    Interlocked.Increment(ref _number);
+                    Console.Out.WriteLineAsync("Starting flushing cache..");
+                    DeleteOldPosts();
+                },
+                null,
+                TimeSpan.Zero,
+                TimeSpan.FromDays(1));
+            
             _saveTimer = new Timer(o => {
                 Interlocked.Increment(ref _number);
                 Console.Out.WriteLineAsync("Starting saving in cache..");
@@ -99,16 +108,7 @@ namespace CyNewsCorner
             null,
             TimeSpan.Zero,
             TimeSpan.FromMinutes(1));
-            
-            _flushTimer = new Timer(o => {
-                Interlocked.Increment(ref _number);
-                Console.Out.WriteLineAsync("Starting flushing cache..");
-                DeleteOldPosts();
-            },
-            null,
-            TimeSpan.Zero,
-            TimeSpan.FromMinutes(3));
-
+         
             return Task.CompletedTask;
         }
 
@@ -225,8 +225,13 @@ namespace CyNewsCorner
                     if (posts.Select(q => q.Key).Any(q => q.Contains(n.Url)))
                         continue;
 
-                    var jsonString = JsonSerializer.Serialize(n);
-                    RedisDb.StringSet(n.Url, jsonString);
+                    var dt = Convert.ToDateTime(n.PublishDatetime, CultureInfo.InvariantCulture).Date;
+                    var currDate = Convert.ToDateTime(DateTime.UtcNow.ToString("dd/MM/yyyy"), CultureInfo.InvariantCulture);
+                    if (dt == currDate)
+                    {
+                        var jsonString = JsonSerializer.Serialize(n);
+                        RedisDb.StringSet(n.Url, jsonString);
+                    }
                 }
 
                 Console.Out.WriteLineAsync("Saving posts process completed.");
@@ -241,6 +246,18 @@ namespace CyNewsCorner
 
         private void DeleteOldPosts()
         {
+            var cachedPosts = RedisServer.Keys().Select(key => JsonSerializer
+                .Deserialize<Post>(RedisDb.StringGet(key))).ToList();
+            
+            foreach (var post in cachedPosts)
+            {
+                var dt = Convert.ToDateTime(post.PublishDatetime, CultureInfo.InvariantCulture).Date;
+                var currDate = Convert.ToDateTime(DateTime.UtcNow.ToString("dd/MM/yyyy"), CultureInfo.InvariantCulture);
+                if (dt < currDate)
+                {
+                    RedisDb.KeyDelete(post.Url);
+                }
+            }
             RedisServer.FlushDatabase(RedisDb.Database);
             _logger.LogInformation("Old posts flushed from cache.");
         }
