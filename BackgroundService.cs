@@ -157,7 +157,7 @@ namespace CyNewsCorner
                             post.Image = e.Element("enclosure") == null
                                 ? ""
                                 : e.Element("enclosure").Attribute("url").Value;
-                            post.PublishDatetime = e.Element("pubDate") == null ? "" : Convert.ToDateTime(e.Element("pubDate").Value, CultureInfo.CurrentCulture).ToString("dd/MM/yyyy hh:MM:ss");
+                            post.PublishDatetime = e.Element("pubDate") == null ? "" : Convert.ToDateTime(e.Element("pubDate").Value, CultureInfo.CurrentCulture).ToString();
                             post.AddedOn = DateTime.UtcNow;
                             news.Add(post);
                         }
@@ -225,8 +225,8 @@ namespace CyNewsCorner
                     if (posts.Select(q => q.Key).Any(q => q.Contains(n.Url)))
                         continue;
 
-                    var dt = Convert.ToDateTime(n.PublishDatetime, CultureInfo.InvariantCulture).Date;
-                    var currDate = Convert.ToDateTime(DateTime.UtcNow.ToString("dd/MM/yyyy"), CultureInfo.InvariantCulture);
+                    var dt = Convert.ToDateTime(n.PublishDatetime).ToString("dd/MM/yyyy");
+                    var currDate = DateTime.UtcNow.ToString("dd/MM/yyyy");
                     if (dt == currDate)
                     {
                         var jsonString = JsonSerializer.Serialize(n);
@@ -251,8 +251,8 @@ namespace CyNewsCorner
             
             foreach (var post in cachedPosts)
             {
-                var dt = Convert.ToDateTime(post.PublishDatetime, CultureInfo.InvariantCulture).Date;
-                var currDate = Convert.ToDateTime(DateTime.UtcNow.ToString("dd/MM/yyyy"), CultureInfo.InvariantCulture);
+                var dt = Convert.ToDateTime(post.PublishDatetime).Date;
+                var currDate = Convert.ToDateTime(DateTime.UtcNow).Date;
                 if (dt < currDate)
                 {
                     RedisDb.KeyDelete(post.Url);
