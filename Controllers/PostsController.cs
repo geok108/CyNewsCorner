@@ -62,7 +62,9 @@ namespace CyNewsCorner.Controllers
                 var response = new GetPostsResponse();
                 var postList = GetAllNews();
                 
-                response.PostList = request.SelectedNewsSources == null ||request.SelectedNewsSources.Length == 0 ? postList : postList.FindAll(q => request.SelectedNewsSources.Contains(q.Source));
+                //To be refactored to filter selected sources
+                //response.PostList = request.SelectedNewsSources == null ||request.SelectedNewsSources.Length == 0 ? postList : postList.FindAll(q => request.SelectedNewsSources.Contains(q.Source));
+                response.PostList = postList;
                 _logger.LogInformation("Getting filtered news Succeeded.");
 
                 return response;

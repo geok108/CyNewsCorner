@@ -2,25 +2,44 @@
   "sources": [
     {
       "id": 1,
-      "name": "Sigmalive",
-      "rssUrl": "https://www.sigmalive.com/rss",
-      "isActive": false
+      "name": "MMA Fighting",
+      "rssUrl": "https://www.mmafighting.com/rss/current",
+      "isActive": true
     },
     {
       "id": 2,
-      "name": "Cyprus Times",
-      "rssUrl": "https://cyprustimes.com/feed/",
-      "isActive": false
+      "name": "Low Kick MMA",
+      "rssUrl": "https://www.bloodyelbow.com/rss/current",
+      "isActive": true
     },
     {
       "id": 3,
-      "name": "Omegalive",
-      "rssUrl": "https://omegalive.com.cy/kypros-feed.xml",
-      "isActive": false
-    },{
+      "name": "MMAjunkie",
+      "rssUrl": "https://mmajunkie.usatoday.com/feed/",
+      "isActive": true
+    },
+    {
       "id": 4,
       "name": "MMA News",
       "rssUrl": "https://www.mmanews.com/feed/",
+      "isActive": true
+    },
+    {
+      "id": 5,
+      "name": "MMA Mania",
+      "rssUrl": "https://www.mmamania.com/rss/current",
+      "isActive": true
+    },
+    {
+      "id": 6,
+      "name": "BJPenn",
+      "rssUrl": "https://www.bjpenn.com/feed/",
+      "isActive": true
+    },
+    {
+      "id": 6,
+      "name": "MMA Weekly",
+      "rssUrl": "https://www.mmaweekly.com/feed",
       "isActive": true
     }
   ]

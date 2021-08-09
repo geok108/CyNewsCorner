@@ -14,7 +14,8 @@ namespace CyNewsCorner.Responses
         public string Url { get; set; }
         
         public string Description { get; set; }
-        public int Source { get; set; }
+
+        public string Source { get; set; }
         
         public string PublishDatetime { get; set; }
         

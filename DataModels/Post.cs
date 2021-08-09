@@ -11,7 +11,7 @@ namespace CyNewsCorner.DataModels
         public string Category { get; set; }
         public string Description { get; set; }
         
-        public int Source { get; set; }
+        public string Source { get; set; }
         public DateTime AddedOn { get; set; }
 
     }

@@ -131,7 +131,7 @@ namespace CyNewsCorner
 
             try
             {
-                var news = new List<DataModels.Post>();
+                var news = new List<Post>();
                 foreach (var source in Sources)
                 {
                     var startTime = DateTime.UtcNow;
@@ -146,17 +146,21 @@ namespace CyNewsCorner
 
                     foreach (var element in doc.Elements())
                     {
-                        foreach (var e in element.Element("channel").Elements("item"))
+                        var elements = element.Element("channel") == null ? element.Elements("entry") : element.Element("channel").Elements("item");
+                        foreach (var e in elements)
                         {
-                            var post = new DataModels.Post();
+                            var post = new Post();
                             post.Title = e.Element("title") == null ? "" : e.Element("title").Value;
                             post.Category = e.Element("category") == null ? "" : e.Element("category").Value;
                             post.Description = e.Element("description") == null ? "" : e.Element("description").Value;
-                            post.Source = source.Id;
+                            post.Source = source.Name;
                             post.Url = e.Element("link") == null ? "" : e.Element("link").Value;
                             post.Image = e.Element("enclosure") == null
                                 ? ""
                                 : e.Element("enclosure").Attribute("url").Value;
+                            //if (post.Image == null || post.Image == "") {
+                            //    post.Image = e.Element("content").Attribute("figure").Value;
+                            //}
                             post.PublishDatetime = e.Element("pubDate") == null ? "" : Convert.ToDateTime(e.Element("pubDate").Value, CultureInfo.CurrentCulture).ToString();
                             post.AddedOn = DateTime.UtcNow;
                             news.Add(post);
