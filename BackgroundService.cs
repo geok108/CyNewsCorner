@@ -243,7 +243,7 @@ namespace CyNewsCorner
             }
             catch (Exception ex)
             {
-                _logger.LogError("Oops..Exception!", ex);
+                _logger.LogError(ex.Message);
                 throw new Exception("Oops..Exception!");
             }
         }

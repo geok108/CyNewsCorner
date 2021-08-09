@@ -60,7 +60,7 @@ namespace CyNewsCorner.Controllers
                 }
 
                 var response = new GetPostsResponse();
-                var postList = GetAllNews();
+                var postList = GetAllNews(request.Page, request.PerPage);
                 
                 //To be refactored to filter selected sources
                 //response.PostList = request.SelectedNewsSources == null ||request.SelectedNewsSources.Length == 0 ? postList : postList.FindAll(q => request.SelectedNewsSources.Contains(q.Source));
@@ -85,9 +85,11 @@ namespace CyNewsCorner.Controllers
             }
         }
         
-        private List<Post> GetAllNews()
+        private List<Post> GetAllNews(int page, int perPage)
         {
-            return _cacheServer.Keys().Select(key => JsonSerializer.Deserialize<Post>(_cacheDb.StringGet(key))).ToList();
+            var noOfPosts = perPage == null ? 9 : perPage;
+            var offset = page == null ? 0 : page * perPage;
+            return _cacheServer.Keys().Select(key => JsonSerializer.Deserialize<Post>(_cacheDb.StringGet(key))).Skip(offset).Take(noOfPosts).ToList();
         }
     }
 }
