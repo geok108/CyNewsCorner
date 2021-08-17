@@ -84,7 +84,7 @@ namespace CyNewsCorner
                     sources.Add(newsSource);
                 }
 
-                Sources = sources;
+                Sources = sources.Where(q => q.IsActive).ToList();
                 _logger.LogInformation("Parsing sources json Succeeded.");
             }
         }
@@ -143,26 +143,44 @@ namespace CyNewsCorner
 
                     XDocument doc = XDocument.Load(source.RssUrl);
                     var endTime = DateTime.UtcNow;
+                    XNamespace Snmp = "http://www.w3.org/2005/Atom";
 
                     foreach (var element in doc.Elements())
                     {
-                        var elements = element.Element("channel") == null ? element.Elements("entry") : element.Element("channel").Elements("item");
+                        var elements = element.Element("channel") == null ? element.Descendants(Snmp+"entry") : element.Element("channel").Elements("item");
                         foreach (var e in elements)
                         {
                             var post = new Post();
-                            post.Title = e.Element("title") == null ? "" : e.Element("title").Value;
-                            post.Category = e.Element("category") == null ? "" : e.Element("category").Value;
-                            post.Description = e.Element("description") == null ? "" : e.Element("description").Value;
-                            post.Source = source.Name;
-                            post.Url = e.Element("link") == null ? "" : e.Element("link").Value;
-                            post.Image = e.Element("enclosure") == null
-                                ? ""
-                                : e.Element("enclosure").Attribute("url").Value;
-                            //if (post.Image == null || post.Image == "") {
-                            //    post.Image = e.Element("content").Attribute("figure").Value;
-                            //}
-                            post.PublishDatetime = e.Element("pubDate") == null ? "" : Convert.ToDateTime(e.Element("pubDate").Value, CultureInfo.CurrentCulture).ToString();
+
+                            if (e.Name.LocalName == "entry")
+                            {
+                                post.Title = e.Element(Snmp + "title") == null ? "" : e.Element(Snmp + "title").Value;
+                                post.Category = e.Element(Snmp + "category") == null ? "" : e.Element(Snmp + "category").Value;
+                                post.Description = e.Element(Snmp + "content") == null ? "" : e.Element(Snmp + "content").Value;
+                                post.Source = source.Name;
+                                post.Url = e.Element(Snmp + "id") == null ? "" : e.Element(Snmp + "id").Value;
+                                //post.Image = e.Element("enclosure") == null
+                                //    ? ""
+                                //    : e.Element("enclosure").Attribute("url").Value;
+                                post.Image = GetThumbnail(post.Description, "entry");
+                                post.PublishDatetime = e.Element(Snmp + "published") == null ? "" : Convert.ToDateTime(e.Element(Snmp + "published").Value, CultureInfo.CurrentCulture).ToString();
+
+                            }
+                            else
+                            {
+                                post.Title = e.Element("title") == null ? "" : e.Element("title").Value;
+                                post.Category = e.Element("category") == null ? "" : e.Element("category").Value;
+                                post.Description = e.Element("description") == null ? "" : e.Element("description").Value;
+                                post.Source = source.Name;
+                                post.Url = e.Element("link") == null ? "" : e.Element("link").Value;
+                                //post.Image = e.Element("enclosure") == null
+                                //    ? ""
+                                //    : e.Element("enclosure").Attribute("url").Value;
+                                post.Image = GetThumbnail(e.ToString());
+                                post.PublishDatetime = e.Element("pubDate") == null ? "" : Convert.ToDateTime(e.Element("pubDate").Value, CultureInfo.CurrentCulture).ToString();
+                            }
                             post.AddedOn = DateTime.UtcNow;
+
                             news.Add(post);
                         }
                     }
@@ -264,6 +282,40 @@ namespace CyNewsCorner
             }
             RedisServer.FlushDatabase(RedisDb.Database);
             _logger.LogInformation("Old posts flushed from cache.");
+        }
+
+        private string GetThumbnail(string item) {
+
+            var hasImg = item.Contains("<media:thumbnail url=\"");
+            var imgUrl = new string[] { };
+            if (!hasImg)
+            {
+                imgUrl = item.Split("<media:content url=\"");
+            }
+            else {
+                imgUrl = item.Split("<media:thumbnail url=\"");
+
+            }
+
+            if (imgUrl.Length < 2) {
+                return "";
+            }
+            return imgUrl[1].Split("\"")[0];
+        }  
+        
+        private string GetThumbnail(string item, string elName) {
+
+            if(elName != "entry")
+            {
+                return "";
+            }
+        
+            var imgUrl = item.Split("src=\"");
+
+            if (imgUrl.Length < 2) {
+                return "";
+            }
+            return imgUrl[1].Split("\"")[0];
         }
 
         #endregion Private

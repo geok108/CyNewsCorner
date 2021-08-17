@@ -3,6 +3,7 @@
     {
       "id": 1,
       "name": "MMA Fighting",
+      "imageUrl": "/sources_logos/mmafighting.png",  
       "rssUrl": "https://www.mmafighting.com/rss/current",
       "isActive": true
     },
