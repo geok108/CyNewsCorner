@@ -42,6 +42,18 @@
       "name": "MMA Weekly",
       "rssUrl": "https://www.mmaweekly.com/feed",
       "isActive": true
+    },
+    {
+      "id": 7,
+      "name": "MMA Fighting",
+      "rssUrl": "https://www.mmafighting.com/rss/current",
+      "isActive": true
+    },
+    {
+      "id": 8,
+      "name": "Middle Easy",
+      "rssUrl": "https://middleeasy.com/feed/",
+      "isActive": true
     }
   ]
 }

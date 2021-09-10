@@ -247,9 +247,11 @@ namespace CyNewsCorner
                     if (posts.Select(q => q.Key).Any(q => q.Contains(n.Url)))
                         continue;
 
-                    var dt = Convert.ToDateTime(n.PublishDatetime).ToString("dd/MM/yyyy");
-                    var currDate = DateTime.UtcNow.ToString("dd/MM/yyyy");
-                    if (dt == currDate)
+                    //var dt = Convert.ToDateTime(n.PublishDatetime).ToString("dd/MM/yyyy");
+                    //var currDate = DateTime.UtcNow.ToString("dd/MM/yyyy");
+                    var dt = Convert.ToDateTime(n.PublishDatetime);
+                    var currDate = DateTime.UtcNow;
+                    if (dt >= currDate.AddDays(-1))
                     {
                         var jsonString = JsonSerializer.Serialize(n);
                         RedisDb.StringSet(n.Url, jsonString);
