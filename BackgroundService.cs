@@ -14,6 +14,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StackExchange.Redis;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using System.Net.Http;
+using System.Text;
+using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 
 namespace CyNewsCorner
 {
@@ -22,6 +26,7 @@ namespace CyNewsCorner
         private readonly ILogger<BackgroundService> _logger;
 
         private Timer _saveTimer;
+
         private Timer _flushTimer;
         
         private int _number;
@@ -73,8 +78,14 @@ namespace CyNewsCorner
                             case "name":
                                 newsSource.Name = property.Value.ToString();
                                 break; 
+                            case "imageUrl":
+                                newsSource.ImageUrl = property.Value.ToString();
+                                break; 
                             case "rssUrl":
                                 newsSource.RssUrl = property.Value.ToString();
+                                break;
+                            case "url":
+                                newsSource.Url = property.Value.ToString();
                                 break; 
                             case "isActive":
                                 newsSource.IsActive = bool.Parse(property.Value.ToString());
@@ -158,7 +169,9 @@ namespace CyNewsCorner
                                 post.Category = e.Element(Snmp + "category") == null ? "" : e.Element(Snmp + "category").Value;
                                 post.Description = e.Element(Snmp + "content") == null ? "" : e.Element(Snmp + "content").Value;
                                 post.Source = source.Name;
-                                post.Url = e.Element(Snmp + "id") == null ? "" : e.Element(Snmp + "id").Value;
+                                post.SourceUrl = GetSourceUrl(source.Name);
+                                post.SourceLogo = GetSourceLogoPath(source.Name);
+                                post.ExternalUrl = e.Element(Snmp + "id") == null ? "" : e.Element(Snmp + "id").Value;
                                 //post.Image = e.Element("enclosure") == null
                                 //    ? ""
                                 //    : e.Element("enclosure").Attribute("url").Value;
@@ -172,7 +185,9 @@ namespace CyNewsCorner
                                 post.Category = e.Element("category") == null ? "" : e.Element("category").Value;
                                 post.Description = e.Element("description") == null ? "" : e.Element("description").Value;
                                 post.Source = source.Name;
-                                post.Url = e.Element("link") == null ? "" : e.Element("link").Value;
+                                post.SourceUrl = GetSourceUrl(source.Name);
+                                post.SourceLogo = GetSourceLogoPath(source.Name);
+                                post.ExternalUrl = e.Element("link") == null ? "" : e.Element("link").Value;
                                 //post.Image = e.Element("enclosure") == null
                                 //    ? ""
                                 //    : e.Element("enclosure").Attribute("url").Value;
@@ -244,17 +259,26 @@ namespace CyNewsCorner
                 foreach (var n in postsList)
                 {
                     //check first if post exists
-                    if (posts.Select(q => q.Key).Any(q => q.Contains(n.Url)))
+                    if (posts.Select(q => q.Key).Any(q => q.Contains(n.ExternalUrl)))
                         continue;
 
                     //var dt = Convert.ToDateTime(n.PublishDatetime).ToString("dd/MM/yyyy");
                     //var currDate = DateTime.UtcNow.ToString("dd/MM/yyyy");
-                    var dt = Convert.ToDateTime(n.PublishDatetime);
+                    var dt = Convert.ToDateTime(n.PublishDatetime).ToUniversalTime();
                     var currDate = DateTime.UtcNow;
                     if (dt >= currDate.AddDays(-1))
                     {
+                        n.Url = GeneratePostHtml(n);
                         var jsonString = JsonSerializer.Serialize(n);
-                        RedisDb.StringSet(n.Url, jsonString);
+                        RedisDb.StringSet(n.ExternalUrl, jsonString);
+
+                        //create wp posts
+                        //var wpJsonStr = PopulateWpObj(n);
+                        //var client = new HttpClient();
+                        //client.DefaultRequestHeaders.Authorization =
+                        //    new AuthenticationHeaderValue("Basic", "YWRtaW46dUg3NSBHTVR0IGVFMnkgWGxDYiBRTjdhIGhBUXA=");
+                        //client.PostAsync("http://localhost/wordpress/wp-json/wp/v2/posts", new StringContent(wpJsonStr, Encoding.UTF8, "application/json"));
+
                     }
                 }
 
@@ -277,9 +301,9 @@ namespace CyNewsCorner
             {
                 var dt = Convert.ToDateTime(post.PublishDatetime).Date;
                 var currDate = Convert.ToDateTime(DateTime.UtcNow).Date;
-                if (dt < currDate)
+                if (dt < currDate.AddDays(-2))
                 {
-                    RedisDb.KeyDelete(post.Url);
+                    RedisDb.KeyDelete(post.ExternalUrl);
                 }
             }
             RedisServer.FlushDatabase(RedisDb.Database);
@@ -320,6 +344,44 @@ namespace CyNewsCorner
             return imgUrl[1].Split("\"")[0];
         }
 
+        private string GetSourceLogoPath(string source) {
+            return Sources.Where(q => q.Name == source).Single().ImageUrl;
+        } 
+        
+        private string GetSourceUrl(string source) {
+            return Sources.Where(q => q.Name == source).Single().Url;
+        }
+
+        private string PopulateWpObj(Post post) {
+            var wpPost = new WpPost();
+            wpPost.title = post.Title;
+            wpPost.content = post.Description;
+            wpPost.status = "publish";
+
+            return JsonSerializer.Serialize(wpPost);
+        }
+
+        private string GeneratePostHtml(Post post)
+        {
+            var templateFile = File.ReadAllText("C:\\Users\\georg\\DEV\\CyNewsCorner\\postsTemplate.html");
+            var postFile = templateFile.Replace("[POSTTITLE]", post.Title);
+            var content = post.Description.Length > 500 ? post.Description.Substring(0, 500) + "..." : post.Description;
+            postFile = postFile.Replace("[POSTCONTENT]", content);
+            postFile = postFile.Replace("[POSTURL]", post.ExternalUrl);
+
+            var slug = post.Title.Replace(" ", "-");
+            slug = Regex.Replace(slug, "[^0-9a-zA-Z-,]+", "");
+            File.WriteAllText("C:\\Users\\georg\\DEV\\bluecorner\\public\\posts\\" + slug + ".html", postFile);
+
+            return "/posts/"+slug + ".html";
+        }
+
         #endregion Private
+        }
+
+    public class WpPost {
+        public string title { get; set; }
+        public string content { get; set; }
+        public string status { get; set; }
     }
 }

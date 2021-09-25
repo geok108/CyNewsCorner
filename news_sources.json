@@ -5,54 +5,63 @@
       "name": "MMA Fighting",
       "imageUrl": "/sources_logos/mmafighting.png",  
       "rssUrl": "https://www.mmafighting.com/rss/current",
+      "url": "https://www.mmafighting.com",
       "isActive": true
     },
     {
       "id": 2,
       "name": "Low Kick MMA",
+      "imageUrl": "/sources_logos/bloodyelbow.png",
       "rssUrl": "https://www.bloodyelbow.com/rss/current",
+      "url": "https://www.bloodyelbow.com",
       "isActive": true
     },
     {
       "id": 3,
       "name": "MMAjunkie",
+      "imageUrl": "/sources_logos/mmajunkie.png",
       "rssUrl": "https://mmajunkie.usatoday.com/feed/",
+      "url": "https://mmajunkie.usatoday.com",
       "isActive": true
     },
     {
       "id": 4,
       "name": "MMA News",
+      "imageUrl": "/sources_logos/mmanews.png",
       "rssUrl": "https://www.mmanews.com/feed/",
+      "url": "https://www.mmanews.com",
       "isActive": true
     },
     {
       "id": 5,
       "name": "MMA Mania",
+      "imageUrl": "/sources_logos/mmamania.png",
       "rssUrl": "https://www.mmamania.com/rss/current",
+      "url": "https://www.mmamania.com",
       "isActive": true
     },
     {
       "id": 6,
       "name": "BJPenn",
+      "imageUrl": "/sources_logos/bjpenn.webp",
       "rssUrl": "https://www.bjpenn.com/feed/",
+      "url": "https://www.bjpenn.com",
       "isActive": true
     },
     {
       "id": 6,
       "name": "MMA Weekly",
+      "imageUrl": "/sources_logos/mmaweekly.png",
       "rssUrl": "https://www.mmaweekly.com/feed",
+      "url": "https://www.mmaweekly.com",
       "isActive": true
     },
     {
       "id": 7,
-      "name": "MMA Fighting",
-      "rssUrl": "https://www.mmafighting.com/rss/current",
-      "isActive": true
-    },
-    {
-      "id": 8,
       "name": "Middle Easy",
+      "imageUrl": "/sources_logos/middleeasy.png",
       "rssUrl": "https://middleeasy.com/feed/",
+      "url": "https://middleeasy.com",
       "isActive": true
     }
   ]
