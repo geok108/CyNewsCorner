@@ -167,7 +167,8 @@ namespace CyNewsCorner
                             {
                                 post.Title = e.Element(Snmp + "title") == null ? "" : e.Element(Snmp + "title").Value;
                                 post.Category = e.Element(Snmp + "category") == null ? "" : e.Element(Snmp + "category").Value;
-                                post.Description = e.Element(Snmp + "content") == null ? "" : e.Element(Snmp + "content").Value;
+                                var content = e.Element(Snmp + "content") == null ? "" : e.Element(Snmp + "content").Value;
+                                post.Description = UpdateImgStyle(content); 
                                 post.Source = source.Name;
                                 post.SourceUrl = GetSourceUrl(source.Name);
                                 post.SourceLogo = GetSourceLogoPath(source.Name);
@@ -183,7 +184,8 @@ namespace CyNewsCorner
                             {
                                 post.Title = e.Element("title") == null ? "" : e.Element("title").Value;
                                 post.Category = e.Element("category") == null ? "" : e.Element("category").Value;
-                                post.Description = e.Element("description") == null ? "" : e.Element("description").Value;
+                                var content = e.Element("description") == null ? "" : e.Element("description").Value;
+                                post.Description = UpdateImgStyle(content);
                                 post.Source = source.Name;
                                 post.SourceUrl = GetSourceUrl(source.Name);
                                 post.SourceLogo = GetSourceLogoPath(source.Name);
@@ -352,6 +354,15 @@ namespace CyNewsCorner
             return Sources.Where(q => q.Name == source).Single().Url;
         }
 
+        private string UpdateImgStyle(string content) {
+            if (content.Contains("<img"))
+            {
+                var insIndex = content.IndexOf("<img") + "<img".Length + 1;
+                content = content.Insert(insIndex, " style='width:100%;' ");
+            }
+            return content;
+        }
+
         private string PopulateWpObj(Post post) {
             var wpPost = new WpPost();
             wpPost.title = post.Title;
@@ -365,12 +376,12 @@ namespace CyNewsCorner
         {
             var templateFile = File.ReadAllText("C:\\Users\\georg\\DEV\\CyNewsCorner\\postsTemplate.html");
             var postFile = templateFile.Replace("[POSTTITLE]", post.Title);
-            var content = post.Description.Length > 500 ? post.Description.Substring(0, 500) + "..." : post.Description;
+            var content = post.Description.Length > 1000 ? post.Description.Substring(0, 1000) + "..." : post.Description;
             postFile = postFile.Replace("[POSTCONTENT]", content);
             postFile = postFile.Replace("[POSTURL]", post.ExternalUrl);
 
             var slug = post.Title.Replace(" ", "-");
-            slug = Regex.Replace(slug, "[^0-9a-zA-Z-,]+", "");
+            slug = Regex.Replace(slug, "[^0-9a-zA-Z-,]+", "").ToLower();
             File.WriteAllText("C:\\Users\\georg\\DEV\\bluecorner\\public\\posts\\" + slug + ".html", postFile);
 
             return "/posts/"+slug + ".html";
