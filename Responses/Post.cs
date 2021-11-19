@@ -11,9 +11,11 @@ namespace CyNewsCorner.Responses
         
         public string Category { get; set; }
         
-        public string Url { get; set; }
+        public string ExternalUrl { get; set; }
         
         public string Description { get; set; }
+
+        public string Slug { get; set; }
 
         public string Source { get; set; }
 

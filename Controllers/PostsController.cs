@@ -83,13 +83,56 @@ namespace CyNewsCorner.Controllers
                 return new GetPostsResponse();
             }
         }
-        
+
+        [HttpGet("{Id}")]
+        public GetPostResponse GetPost(string Id)
+        {
+            try
+            {
+                _logger.LogInformation("Getting post...");
+
+                //var validator = new GetPostListRequestValidator();
+                //var results = validator.Validate(request);
+                //if (results.Errors.Count > 0)
+                //{
+                //    throw new ValidationException(results.Errors);
+                //}
+                var post = GetAllNews().Find(q => q.Slug == Id);
+                var response = new GetPostResponse();
+                response.Post = post;
+                //To be refactored to filter selected sources
+                //response.PostList = request.SelectedNewsSources == null ||request.SelectedNewsSources.Length == 0 ? postList : postList.FindAll(q => request.SelectedNewsSources.Contains(q.Source));
+                _logger.LogInformation("Getting post Succeeded.");
+
+                return response;
+            }
+            //catch (ValidationException ex)
+            //{
+            //    _logger.LogError(ex.ToString());
+            //    Response.StatusCode = 400;
+            //    var errorRes = new GetPostResponse();
+            //    errorRes.ErrorMessage = string.Join(", ", ex.Errors) + ".";
+            //    return errorRes;
+            //}
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                Response.StatusCode = 400;
+                return new GetPostResponse();
+            }
+        }
+
         private List<Post> GetAllNews(int page, int perPage)
         {
             var noOfPosts = perPage == null ? 9 : perPage;
             var offset = page == null ? 0 : page * perPage;
             return _cacheServer.Keys().Select(key => JsonSerializer.Deserialize<Post>(_cacheDb.StringGet(key))).Skip(offset).Take(noOfPosts).ToList();
             //return _cacheServer.Keys().Select(key => JsonSerializer.Deserialize<Post>(_cacheDb.StringGet(key))).ToList();
+        } 
+        
+        private List<Post> GetAllNews()
+        {
+            return _cacheServer.Keys().Select(key => JsonSerializer.Deserialize<Post>(_cacheDb.StringGet(key))).ToList();
         }
     }
 }

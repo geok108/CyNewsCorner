@@ -173,6 +173,9 @@ namespace CyNewsCorner
                                 post.SourceUrl = GetSourceUrl(source.Name);
                                 post.SourceLogo = GetSourceLogoPath(source.Name);
                                 post.ExternalUrl = e.Element(Snmp + "id") == null ? "" : e.Element(Snmp + "id").Value;
+                                var slug = post.Title.Replace(" ", "-");
+                                slug = Regex.Replace(slug, "[^0-9a-zA-Z-,]+", "").ToLower();
+                                post.Slug = slug;
                                 //post.Image = e.Element("enclosure") == null
                                 //    ? ""
                                 //    : e.Element("enclosure").Attribute("url").Value;
@@ -190,6 +193,9 @@ namespace CyNewsCorner
                                 post.SourceUrl = GetSourceUrl(source.Name);
                                 post.SourceLogo = GetSourceLogoPath(source.Name);
                                 post.ExternalUrl = e.Element("link") == null ? "" : e.Element("link").Value;
+                                var slug = post.Title.Replace(" ", "-");
+                                slug = Regex.Replace(slug, "[^0-9a-zA-Z-,]+", "").ToLower();
+                                post.Slug = slug;
                                 //post.Image = e.Element("enclosure") == null
                                 //    ? ""
                                 //    : e.Element("enclosure").Attribute("url").Value;
@@ -379,6 +385,9 @@ namespace CyNewsCorner
             var content = post.Description.Length > 1000 ? post.Description.Substring(0, 1000) + "..." : post.Description;
             postFile = postFile.Replace("[POSTCONTENT]", content);
             postFile = postFile.Replace("[POSTURL]", post.ExternalUrl);
+            postFile = postFile.Replace("[POSTDATE]", post.PublishDatetime);
+            postFile = postFile.Replace("[POSTSOURCE]", post.Source);
+            postFile = postFile.Replace("[POSTSOURCELOGO]", post.SourceLogo);
 
             var slug = post.Title.Replace(" ", "-");
             slug = Regex.Replace(slug, "[^0-9a-zA-Z-,]+", "").ToLower();
