@@ -25,6 +25,10 @@ namespace CyNewsCorner.Responses
         
         public string PublishDatetime { get; set; }
         
+        public DateTime Datetime { get; set; }
+        
+        public DateTime AddedOn { get; set; }
+        
         public string Image { get; set; }
     }
 }

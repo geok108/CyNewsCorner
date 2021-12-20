@@ -61,6 +61,11 @@ namespace CyNewsCorner.Controllers
 
                 var response = new GetPostsResponse();
                 var postList = GetAllNews(request.Page, request.PerPage);
+
+                foreach (var post in postList) {
+                    post.PublishDatetime = GetRelativeTime(post.Datetime);
+                }
+
                 //To be refactored to filter selected sources
                 //response.PostList = request.SelectedNewsSources == null ||request.SelectedNewsSources.Length == 0 ? postList : postList.FindAll(q => request.SelectedNewsSources.Contains(q.Source));
                 response.PostList = postList;
@@ -99,6 +104,7 @@ namespace CyNewsCorner.Controllers
                 //}
                 var post = GetAllNews().Find(q => q.Slug == Id);
                 var response = new GetPostResponse();
+                post.PublishDatetime = GetRelativeTime(post.Datetime);
                 response.Post = post;
                 //To be refactored to filter selected sources
                 //response.PostList = request.SelectedNewsSources == null ||request.SelectedNewsSources.Length == 0 ? postList : postList.FindAll(q => request.SelectedNewsSources.Contains(q.Source));
@@ -126,13 +132,58 @@ namespace CyNewsCorner.Controllers
         {
             var noOfPosts = perPage == null ? 9 : perPage;
             var offset = page == null ? 0 : page * perPage;
-            return _cacheServer.Keys().Select(key => JsonSerializer.Deserialize<Post>(_cacheDb.StringGet(key))).Skip(offset).Take(noOfPosts).ToList();
+            return GetAllNews().Skip(offset).Take(noOfPosts).ToList();
             //return _cacheServer.Keys().Select(key => JsonSerializer.Deserialize<Post>(_cacheDb.StringGet(key))).ToList();
         } 
         
         private List<Post> GetAllNews()
-        {
-            return _cacheServer.Keys().Select(key => JsonSerializer.Deserialize<Post>(_cacheDb.StringGet(key))).ToList();
+        {             
+            var posts = _cacheServer.Keys().Select(key => JsonSerializer.Deserialize<Post>(_cacheDb.StringGet(key))).ToList();
+            posts.Sort((x, y) => y.Datetime.CompareTo(x.Datetime));
+            return posts;
+        }
+
+        private string GetRelativeTime(DateTime dateTime) {
+            const int SECOND = 1;
+            const int MINUTE = 60 * SECOND;
+            const int HOUR = 60 * MINUTE;
+            const int DAY = 24 * HOUR;
+            const int MONTH = 30 * DAY;
+
+            var ts = new TimeSpan(DateTime.UtcNow.Ticks - dateTime.Ticks);
+            double delta = Math.Abs(ts.TotalSeconds);
+
+            if (delta < 1 * MINUTE)
+                return ts.Seconds == 1 ? "one second ago" : ts.Seconds + " seconds ago";
+
+            if (delta < 2 * MINUTE)
+                return "a minute ago";
+
+            if (delta < 45 * MINUTE)
+                return ts.Minutes + " minutes ago";
+
+            if (delta < 90 * MINUTE)
+                return "an hour ago";
+
+            if (delta < 24 * HOUR)
+                return ts.Hours + " hours ago";
+
+            if (delta < 48 * HOUR)
+                return "yesterday";
+
+            if (delta < 30 * DAY)
+                return ts.Days + " days ago";
+
+            if (delta < 12 * MONTH)
+            {
+                int months = Convert.ToInt32(Math.Floor((double)ts.Days / 30));
+                return months <= 1 ? "one month ago" : months + " months ago";
+            }
+            else
+            {
+                int years = Convert.ToInt32(Math.Floor((double)ts.Days / 365));
+                return years <= 1 ? "one year ago" : years + " years ago";
+            }
         }
     }
 }

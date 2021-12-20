@@ -167,12 +167,12 @@ namespace CyNewsCorner
                             {
                                 post.Title = e.Element(Snmp + "title") == null ? "" : e.Element(Snmp + "title").Value;
                                 post.Category = e.Element(Snmp + "category") == null ? "" : e.Element(Snmp + "category").Value;
+                                post.ExternalUrl = e.Element(Snmp + "id") == null ? "" : e.Element(Snmp + "id").Value;
                                 var content = e.Element(Snmp + "content") == null ? "" : e.Element(Snmp + "content").Value;
-                                post.Description = UpdateImgStyle(content); 
+                                post.Description = ContentPreprocessing(content, post.ExternalUrl); 
                                 post.Source = source.Name;
                                 post.SourceUrl = GetSourceUrl(source.Name);
                                 post.SourceLogo = GetSourceLogoPath(source.Name);
-                                post.ExternalUrl = e.Element(Snmp + "id") == null ? "" : e.Element(Snmp + "id").Value;
                                 var slug = post.Title.Replace(" ", "-");
                                 slug = Regex.Replace(slug, "[^0-9a-zA-Z-,]+", "").ToLower();
                                 post.Slug = slug;
@@ -181,18 +181,17 @@ namespace CyNewsCorner
                                 //    : e.Element("enclosure").Attribute("url").Value;
                                 post.Image = GetThumbnail(post.Description, "entry");
                                 post.PublishDatetime = e.Element(Snmp + "published") == null ? "" : Convert.ToDateTime(e.Element(Snmp + "published").Value, CultureInfo.CurrentCulture).ToString();
-
                             }
                             else
                             {
                                 post.Title = e.Element("title") == null ? "" : e.Element("title").Value;
                                 post.Category = e.Element("category") == null ? "" : e.Element("category").Value;
+                                post.ExternalUrl = e.Element("link") == null ? "" : e.Element("link").Value;
                                 var content = e.Element("description") == null ? "" : e.Element("description").Value;
-                                post.Description = UpdateImgStyle(content);
+                                post.Description = ContentPreprocessing(content, post.ExternalUrl);
                                 post.Source = source.Name;
                                 post.SourceUrl = GetSourceUrl(source.Name);
                                 post.SourceLogo = GetSourceLogoPath(source.Name);
-                                post.ExternalUrl = e.Element("link") == null ? "" : e.Element("link").Value;
                                 var slug = post.Title.Replace(" ", "-");
                                 slug = Regex.Replace(slug, "[^0-9a-zA-Z-,]+", "").ToLower();
                                 post.Slug = slug;
@@ -203,18 +202,19 @@ namespace CyNewsCorner
                                 post.PublishDatetime = e.Element("pubDate") == null ? "" : Convert.ToDateTime(e.Element("pubDate").Value, CultureInfo.CurrentCulture).ToString();
                             }
                             post.AddedOn = DateTime.UtcNow;
-
+                            post.Datetime = Convert.ToDateTime(post.PublishDatetime).ToUniversalTime();
                             news.Add(post);
                         }
                     }
                 }
                 _logger.LogInformation("Parsing news xmls Succeeded.");
+
                 return news;
             }
             catch (Exception ex)
             {
                 _logger.LogError("Oops..Exception!", ex);
-                throw new Exception("Oops..Exception!");
+                throw ex;
             }
         }
 
@@ -250,10 +250,10 @@ namespace CyNewsCorner
         }
         
         private void SavePosts() {
-            _logger.LogInformation("Saving posts...");
-
             try
             {
+                _logger.LogInformation("Saving posts...");
+
                 var postsList = ParseXmls();
                 var keys = RedisServer.Keys()
                     .Select(key => (string) key).ToArray();
@@ -276,17 +276,8 @@ namespace CyNewsCorner
                     var currDate = DateTime.UtcNow;
                     if (dt >= currDate.AddDays(-1))
                     {
-                        n.Url = GeneratePostHtml(n);
                         var jsonString = JsonSerializer.Serialize(n);
                         RedisDb.StringSet(n.ExternalUrl, jsonString);
-
-                        //create wp posts
-                        //var wpJsonStr = PopulateWpObj(n);
-                        //var client = new HttpClient();
-                        //client.DefaultRequestHeaders.Authorization =
-                        //    new AuthenticationHeaderValue("Basic", "YWRtaW46dUg3NSBHTVR0IGVFMnkgWGxDYiBRTjdhIGhBUXA=");
-                        //client.PostAsync("http://localhost/wordpress/wp-json/wp/v2/posts", new StringContent(wpJsonStr, Encoding.UTF8, "application/json"));
-
                     }
                 }
 
@@ -296,7 +287,7 @@ namespace CyNewsCorner
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                throw new Exception("Oops..Exception!");
+                throw ex;
             }
         }
 
@@ -360,48 +351,25 @@ namespace CyNewsCorner
             return Sources.Where(q => q.Name == source).Single().Url;
         }
 
-        private string UpdateImgStyle(string content) {
+        private string ContentPreprocessing(string content, string url) {
             if (content.Contains("<img"))
             {
                 var insIndex = content.IndexOf("<img") + "<img".Length + 1;
-                content = content.Insert(insIndex, " style='width:100%;' ");
+                content = content.Insert(insIndex, " style='width:100%;height:100%;' ");
             }
+
+            //if (content.Length > 1000)
+            //{
+            //    content = content.Substring(0, 1000);
+            //    content = content.Insert(content.Length, "...");
+            //}
+
+            content = content.Insert(content.Length, "</br><a href=" + url + "><div class=" + "btn btn-success" + ">Read More...</div></a>");
+
             return content;
-        }
-
-        private string PopulateWpObj(Post post) {
-            var wpPost = new WpPost();
-            wpPost.title = post.Title;
-            wpPost.content = post.Description;
-            wpPost.status = "publish";
-
-            return JsonSerializer.Serialize(wpPost);
-        }
-
-        private string GeneratePostHtml(Post post)
-        {
-            var templateFile = File.ReadAllText("C:\\Users\\georg\\DEV\\CyNewsCorner\\postsTemplate.html");
-            var postFile = templateFile.Replace("[POSTTITLE]", post.Title);
-            var content = post.Description.Length > 1000 ? post.Description.Substring(0, 1000) + "..." : post.Description;
-            postFile = postFile.Replace("[POSTCONTENT]", content);
-            postFile = postFile.Replace("[POSTURL]", post.ExternalUrl);
-            postFile = postFile.Replace("[POSTDATE]", post.PublishDatetime);
-            postFile = postFile.Replace("[POSTSOURCE]", post.Source);
-            postFile = postFile.Replace("[POSTSOURCELOGO]", post.SourceLogo);
-
-            var slug = post.Title.Replace(" ", "-");
-            slug = Regex.Replace(slug, "[^0-9a-zA-Z-,]+", "").ToLower();
-            File.WriteAllText("C:\\Users\\georg\\DEV\\bluecorner\\public\\posts\\" + slug + ".html", postFile);
-
-            return "/posts/"+slug + ".html";
         }
 
         #endregion Private
         }
 
-    public class WpPost {
-        public string title { get; set; }
-        public string content { get; set; }
-        public string status { get; set; }
-    }
 }

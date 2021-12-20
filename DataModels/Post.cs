@@ -9,6 +9,7 @@ namespace CyNewsCorner.DataModels
         public string Url { get; set; }
         public string ExternalUrl { get; set; }
         public string PublishDatetime { get; set; }
+        public DateTime Datetime { get; set; }
         public string Category { get; set; }
         public string Description { get; set; }     
         public string Slug { get; set; }     
