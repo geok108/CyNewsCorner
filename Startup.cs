@@ -24,7 +24,7 @@ namespace CyNewsCorner
             services.AddHostedService<BackgroundService>();
             services.AddMvc().AddFluentValidation();
             //redis
-            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost:6379,allowAdmin=true");
+            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(string.Format("{0}:{1},{2}", Configuration["redisHost"], Configuration["redisPort"], "allowAdmin=true"));
             services.AddSingleton<IConnectionMultiplexer>(redis);
         }
 

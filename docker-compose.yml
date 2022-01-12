@@ -1,0 +1,10 @@
+version: '3.4'
+
+services:
+  redis:
+    image: ${DOCKER_REGISTRY-}redis
+  cynewscorner:
+    image: ${DOCKER_REGISTRY-}cynewscorner
+    build:
+      context: .
+      dockerfile: Dockerfile

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore.Update;
 using StackExchange.Redis;
+using Microsoft.Extensions.Configuration;
 
 namespace CyNewsCorner.Controllers
 {
@@ -23,12 +24,15 @@ namespace CyNewsCorner.Controllers
         private readonly IDatabase _cacheDb;
         
         private readonly IServer _cacheServer;
-        
-        public PostsController(ILogger<PostsController> logger, IConnectionMultiplexer redisConn)
+
+        private IConfiguration _config { get; }
+
+        public PostsController(ILogger<PostsController> logger, IConnectionMultiplexer redisConn, IConfiguration configuration)
         {
             _logger = logger;
+            _config = configuration;
             _cacheDb = redisConn.GetDatabase();
-            _cacheServer = redisConn.GetServer("localhost", 6379);
+            _cacheServer = redisConn.GetServer(_config["redisHost"], int.Parse(_config["redisPort"]));
         }
 
         [HttpGet("status")]
@@ -61,7 +65,6 @@ namespace CyNewsCorner.Controllers
 
                 var response = new GetPostsResponse();
                 var postList = GetAllNews(request.Page, request.PerPage);
-
                 foreach (var post in postList) {
                     post.PublishDatetime = GetRelativeTime(post.Datetime);
                 }
@@ -128,6 +131,32 @@ namespace CyNewsCorner.Controllers
             }
         }
 
+        [HttpGet("readmorelist/{PostToExclude}")]
+        public GetPostsResponse GetReadMoreList(GetReadMoreListRequest request) {
+            try
+            {
+                _logger.LogInformation("Getting News For Read More ...");
+                var response = new GetPostsResponse();
+                var postList = GetAllNews();
+                foreach (var post in postList)
+                {
+                    post.PublishDatetime = GetRelativeTime(post.Datetime);
+                }
+
+                response.PostList = postList;
+                _logger.LogInformation("Getting News For Read More Succeeded.");
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                Response.StatusCode = 400;
+                return new GetPostsResponse();
+            }
+
+        }
+
         private List<Post> GetAllNews(int page, int perPage)
         {
             var noOfPosts = perPage == null ? 9 : perPage;
@@ -137,9 +166,10 @@ namespace CyNewsCorner.Controllers
         } 
         
         private List<Post> GetAllNews()
-        {             
+        {
             var posts = _cacheServer.Keys().Select(key => JsonSerializer.Deserialize<Post>(_cacheDb.StringGet(key))).ToList();
             posts.Sort((x, y) => y.Datetime.CompareTo(x.Datetime));
+
             return posts;
         }
 

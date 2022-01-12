@@ -18,6 +18,9 @@ using System.Net.Http;
 using System.Text;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Configuration;
+using AngleSharp.Html.Parser;
+using AngleSharp.Html;
 
 namespace CyNewsCorner
 {
@@ -36,15 +39,17 @@ namespace CyNewsCorner
         private IServer RedisServer { get; set; }
         
         private List<NewsSource> Sources { get; set; }
+
+        private IConfiguration _config { get; }
         
-        public BackgroundService(ILogger<BackgroundService> logger) {
+        public BackgroundService(ILogger<BackgroundService> logger, IConfiguration configuration) {
             _logger = logger;
-
-            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost:6379,allowAdmin=true");
-
+            _config = configuration;
+            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(string.Format("{0}:{1},{2}", _config["redisHost"], _config["redisPort"], "allowAdmin=true"));
             IDatabase db = redis.GetDatabase();
             RedisDb = db;
-            RedisServer = redis.GetServer("localhost", 6379);
+            int redisPort = int.Parse(_config["redisPort"]);
+            RedisServer = redis.GetServer(_config["redisHost"], redisPort);
 
             _logger.LogInformation("Parsing sources json...");
             using (var reader = new StreamReader(@"news_sources.json"))
@@ -358,11 +363,16 @@ namespace CyNewsCorner
                 content = content.Insert(insIndex, " style='width:100%;height:100%;' ");
             }
 
-            //if (content.Length > 1000)
-            //{
-            //    content = content.Substring(0, 1000);
-            //    content = content.Insert(content.Length, "...");
-            //}
+            if (content.Length > 1500)
+            {
+                var prs = new HtmlParser();
+                var sw = new StringWriter();
+                content = content.Substring(0, 1500);
+                content = content.Insert(content.Length, "...</p>");
+                var cont = prs.ParseDocument(content);
+                cont.ToHtml(sw, new PrettyMarkupFormatter());
+                content = cont.Body.InnerHtml;
+            }
 
             content = content.Insert(content.Length, "</br><a href=" + url + "><div class=" + "btn btn-success" + ">Read More...</div></a>");
 
