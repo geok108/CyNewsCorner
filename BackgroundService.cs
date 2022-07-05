@@ -45,7 +45,7 @@ namespace CyNewsCorner
         public BackgroundService(ILogger<BackgroundService> logger, IConfiguration configuration) {
             _logger = logger;
             _config = configuration;
-            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(string.Format("{0}:{1},{2}", _config["redisHost"], _config["redisPort"], "allowAdmin=true"));
+            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(string.Format("{0}:{1},{2},{3},{4}", configuration["redisHost"], configuration["redisPort"], "ssl=false", "allowAdmin=true", "password=" + configuration["redisPwd"]));
             IDatabase db = redis.GetDatabase();
             RedisDb = db;
             int redisPort = int.Parse(_config["redisPort"]);

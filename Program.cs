@@ -34,8 +34,11 @@ namespace CyNewsCorner
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    var port = Environment.GetEnvironmentVariable("PORT");
+
                     webBuilder
                         .UseStartup<Startup>()
+                        .UseUrls("http://*:" + port)
                         .ConfigureLogging(logging =>
                         {
                             logging.ClearProviders();

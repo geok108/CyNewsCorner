@@ -13,7 +13,7 @@ services:
         - common
   cynewscorner:
     environment:
-      - ASPNETCORE_ENVIRONMENT=Test
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:5000
     ports:
       - "5000:5000"

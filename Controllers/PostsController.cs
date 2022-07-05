@@ -12,10 +12,12 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore.Update;
 using StackExchange.Redis;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Cors;
 
 namespace CyNewsCorner.Controllers
 {
     [ApiController]
+    [EnableCors("AllowOrigin")]
     [Route("[controller]")]
     public class PostsController : ControllerBase
     {
