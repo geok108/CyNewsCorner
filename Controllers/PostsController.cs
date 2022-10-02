@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore.Update;
 using StackExchange.Redis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.Extensions.Hosting;
 
 namespace CyNewsCorner.Controllers
 {
@@ -34,7 +35,12 @@ namespace CyNewsCorner.Controllers
             _logger = logger;
             _config = configuration;
             _cacheDb = redisConn.GetDatabase();
-            _cacheServer = redisConn.GetServer(_config["redisHost"], int.Parse(_config["redisPort"]));
+
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            var isProduction = environment == Environments.Production;
+
+            var redisConnString = isProduction ? string.Format("{0}:{1},{2},{3},{4}", Environment.GetEnvironmentVariable("redisHost"), Environment.GetEnvironmentVariable("redisPort"), "ssl=false", "allowAdmin=true", "password=" + Environment.GetEnvironmentVariable("redisPwd")) : string.Format("{0}:{1}", _config["redisHost"], int.Parse(_config["redisPort"]));
+            _cacheServer = redisConn.GetServer(redisConnString);
         }
 
         [HttpGet("status")]

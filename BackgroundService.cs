@@ -45,11 +45,18 @@ namespace CyNewsCorner
         public BackgroundService(ILogger<BackgroundService> logger, IConfiguration configuration) {
             _logger = logger;
             _config = configuration;
-            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(string.Format("{0}:{1},{2},{3},{4}", configuration["redisHost"], configuration["redisPort"], "ssl=false", "allowAdmin=true", "password=" + configuration["redisPwd"]));
+
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            var isProduction = environment == Environments.Production;
+
+            var redisConnString = isProduction ? string.Format("{0}:{1},{2},{3},{4}", Environment.GetEnvironmentVariable("redisHost"), Environment.GetEnvironmentVariable("redisPort"), "ssl=false", "allowAdmin=true", "password=" + Environment.GetEnvironmentVariable("redisPwd")) : string.Format("{0}:{1},{2},{3},{4}", configuration["redisHost"], configuration["redisPort"], "ssl=false", "allowAdmin=true", "password=" + configuration["redisPwd"]);
+            var redisConnHostAndPort = isProduction ? string.Format("{0}:{1}", Environment.GetEnvironmentVariable("redisHost"), Environment.GetEnvironmentVariable("redisPort")) : string.Format("{0}:{1}", configuration["redisHost"], configuration["redisPort"]);
+
+            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(redisConnString);
             IDatabase db = redis.GetDatabase();
             RedisDb = db;
-            int redisPort = int.Parse(_config["redisPort"]);
-            RedisServer = redis.GetServer(_config["redisHost"], redisPort);
+
+            RedisServer = redis.GetServer(redisConnHostAndPort);
 
             _logger.LogInformation("Parsing sources json...");
             using (var reader = new StreamReader(@"news_sources.json"))
