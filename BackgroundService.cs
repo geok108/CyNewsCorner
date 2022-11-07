@@ -48,9 +48,20 @@ namespace CyNewsCorner
 
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             var isProduction = environment == Environments.Production;
-
-            var redisConnString = isProduction ? string.Format("{0}:{1},{2},{3},{4}", Environment.GetEnvironmentVariable("redisHost"), Environment.GetEnvironmentVariable("redisPort"), "ssl=false", "allowAdmin=true", "password=" + Environment.GetEnvironmentVariable("redisPwd")) : string.Format("{0}:{1},{2},{3},{4}", configuration["redisHost"], configuration["redisPort"], "ssl=false", "allowAdmin=true", "password=" + configuration["redisPwd"]);
-            var redisConnHostAndPort = isProduction ? string.Format("{0}:{1}", Environment.GetEnvironmentVariable("redisHost"), Environment.GetEnvironmentVariable("redisPort")) : string.Format("{0}:{1}", configuration["redisHost"], configuration["redisPort"]);
+          
+            var herokuRedisStr = string.Empty;
+            var redisPwd = string.Empty;
+            var redisHost = string.Empty;
+            var redisPort = string.Empty;
+            if (isProduction) {
+                herokuRedisStr = Environment.GetEnvironmentVariable("REDIS_URL");
+                redisPwd = herokuRedisStr.Split("@")[0].Split(":")[2];
+                redisHost = herokuRedisStr.Split("@")[1].Split(":")[0];
+                redisPort = herokuRedisStr.Split("@")[1].Split(":")[1];
+            }
+          
+            var redisConnString = isProduction ? string.Format("{0}:{1},{2},{3},{4}", redisHost, redisPort, "ssl=false", "allowAdmin=true", "password=" + redisPwd) : string.Format("{0}:{1},{2},{3},{4}", configuration["redisHost"], configuration["redisPort"], "ssl=false", "allowAdmin=true", "password=" + configuration["redisPwd"]);
+            var redisConnHostAndPort = isProduction ? string.Format("{0}:{1}", redisHost, redisPort) : string.Format("{0}:{1}", configuration["redisHost"], configuration["redisPort"]);
 
             ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(redisConnString);
             IDatabase db = redis.GetDatabase();

@@ -39,7 +39,18 @@ namespace CyNewsCorner.Controllers
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             var isProduction = environment == Environments.Production;
 
-            var redisConnString = isProduction ? string.Format("{0}:{1},{2},{3},{4}", Environment.GetEnvironmentVariable("redisHost"), Environment.GetEnvironmentVariable("redisPort"), "ssl=false", "allowAdmin=true", "password=" + Environment.GetEnvironmentVariable("redisPwd")) : string.Format("{0}:{1}", _config["redisHost"], int.Parse(_config["redisPort"]));
+            var herokuRedisStr = string.Empty;
+            var redisPwd = string.Empty;
+            var redisHost = string.Empty;
+            var redisPort = string.Empty;
+            if (isProduction)
+            {
+                herokuRedisStr = Environment.GetEnvironmentVariable("REDIS_URL");
+                redisPwd = herokuRedisStr.Split("@")[0].Split(":")[2];
+                redisHost = herokuRedisStr.Split("@")[1].Split(":")[0];
+                redisPort = herokuRedisStr.Split("@")[1].Split(":")[1];
+            }
+            var redisConnString = isProduction ? string.Format("{0}:{1},{2},{3},{4}", redisHost, redisPort, "ssl=false", "allowAdmin=true", "password=" + redisPwd) : string.Format("{0}:{1}", _config["redisHost"], int.Parse(_config["redisPort"]));
             _cacheServer = redisConn.GetServer(redisConnString);
         }
 
@@ -82,6 +93,44 @@ namespace CyNewsCorner.Controllers
                 response.PostList = postList;
              
                 _logger.LogInformation("Getting filtered news Succeeded.");
+
+                return response;
+            }
+            catch (ValidationException ex)
+            {
+                _logger.LogError(ex.ToString());
+                Response.StatusCode = 400;
+                var errorRes = new GetPostsResponse();
+                errorRes.ErrorMessage = string.Join(", ", ex.Errors) + ".";
+                return errorRes;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                Response.StatusCode = 400;
+                return new GetPostsResponse();
+            }
+        }
+
+        [HttpGet("list/all")]
+        public GetPostsResponse GetNewsListAll()
+        {
+            try
+            {
+                _logger.LogInformation("Getting all news...");
+
+                var response = new GetPostsResponse();
+                var postList = GetAllNews();
+                foreach (var post in postList)
+                {
+                    post.PublishDatetime = GetRelativeTime(post.Datetime);
+                }
+
+                //To be refactored to filter selected sources
+                //response.PostList = request.SelectedNewsSources == null ||request.SelectedNewsSources.Length == 0 ? postList : postList.FindAll(q => request.SelectedNewsSources.Contains(q.Source));
+                response.PostList = postList;
+
+                _logger.LogInformation("Getting all news Succeeded.");
 
                 return response;
             }

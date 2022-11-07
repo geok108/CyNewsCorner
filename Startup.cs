@@ -35,8 +35,23 @@ namespace CyNewsCorner
             });
             services.AddRouting(r => r.SuppressCheckForUnhandledSecurityMetadata = true);
 
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            var isProduction = environment == Environments.Production;
+
+            var herokuRedisStr = string.Empty;
+            var redisPwd = string.Empty;
+            var redisHost = string.Empty;
+            var redisPort = string.Empty;
+            if (isProduction)
+            {
+                herokuRedisStr = Environment.GetEnvironmentVariable("REDIS_URL");
+                redisPwd = herokuRedisStr.Split("@")[0].Split(":")[2];
+                redisHost = herokuRedisStr.Split("@")[1].Split(":")[0];
+                redisPort = herokuRedisStr.Split("@")[1].Split(":")[1];
+            }
+
             //redis
-            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(string.Format("{0}:{1},{2},{3},{4}", Configuration["redisHost"], Configuration["redisPort"], "ssl=false", "allowAdmin=true", "password=" + Configuration["redisPwd"]));
+            ConnectionMultiplexer redis = isProduction ? ConnectionMultiplexer.Connect(string.Format("{0}:{1},{2},{3},{4}", redisHost, redisPort, "ssl=false", "allowAdmin=true", "password=" + redisPwd)) : ConnectionMultiplexer.Connect(string.Format("{0}:{1},{2},{3},{4}", Configuration["redisHost"], Configuration["redisPort"], "ssl=false", "allowAdmin=true", "password=" + Configuration["redisPwd"]));
             //var redis = ConnectionMultiplexer.Connect("ec2-44-205-210-221.compute-1.amazonaws.com:15609,ssl=false,password=p8a7f5399b58dbe470e2932869f48920e38fa6e509d4ebce159d1ab49b3d40423");
             services.AddSingleton<IConnectionMultiplexer>(redis);
         }
