@@ -58,6 +58,8 @@ namespace CyNewsCorner
                 redisPwd = herokuRedisStr.Split("@")[0].Split(":")[2];
                 redisHost = herokuRedisStr.Split("@")[1].Split(":")[0];
                 redisPort = herokuRedisStr.Split("@")[1].Split(":")[1];
+
+                _logger.LogInformation("background service: redis host -> " + redisHost);
             }
           
             var redisConnString = isProduction ? string.Format("{0}:{1},{2},{3},{4}", redisHost, redisPort, "ssl=false", "allowAdmin=true", "password=" + redisPwd) : string.Format("{0}:{1},{2},{3},{4}", configuration["redisHost"], configuration["redisPort"], "ssl=false", "allowAdmin=true", "password=" + configuration["redisPwd"]);

@@ -46,12 +46,15 @@ namespace CyNewsCorner.Controllers
             if (isProduction)
             {
                 herokuRedisStr = Environment.GetEnvironmentVariable("REDIS_URL");
+                _logger.LogInformation(herokuRedisStr);
                 redisPwd = herokuRedisStr.Split("@")[0].Split(":")[2];
                 redisHost = herokuRedisStr.Split("@")[1].Split(":")[0];
                 redisPort = herokuRedisStr.Split("@")[1].Split(":")[1];
+                _logger.LogInformation("posts controller: redis host -> " + redisHost);
             }
-            var redisConnString = isProduction ? string.Format("{0}:{1},{2},{3},{4}", redisHost, redisPort, "ssl=false", "allowAdmin=true", "password=" + redisPwd) : string.Format("{0}:{1}", _config["redisHost"], int.Parse(_config["redisPort"]));
+            var redisConnString = isProduction ? string.Format("{0}:{1}", redisHost, redisPort) : string.Format("{0}:{1}", _config["redisHost"], int.Parse(_config["redisPort"]));
             _cacheServer = redisConn.GetServer(redisConnString);
+            _logger.LogInformation("HERE!");
         }
 
         [HttpGet("status")]

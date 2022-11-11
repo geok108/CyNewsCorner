@@ -31,7 +31,7 @@
       "launchBrowser": true,
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/news/status",
       "publishAllPorts": true,
-      "useSSL": false
+      "useSSL": true
     }
   }
 }
