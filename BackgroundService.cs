@@ -165,82 +165,87 @@ namespace CyNewsCorner
         {
             _logger.LogInformation("Parsing news xmls...");
 
-            try
-            {
+        
                 var news = new List<Post>();
                 foreach (var source in Sources)
                 {
-                    var startTime = DateTime.UtcNow;
-                    // if (!isValidResponse(source))
-                    // {
-                    //     Console.Out.WriteLineAsync(string.Format("Source {0} is invalid.", source));
-                    //     continue;
-                    // }
-
-                    XDocument doc = XDocument.Load(source.RssUrl);
-                    var endTime = DateTime.UtcNow;
-                    XNamespace Snmp = "http://www.w3.org/2005/Atom";
-
-                    foreach (var element in doc.Elements())
+                    try
                     {
-                        var elements = element.Element("channel") == null ? element.Descendants(Snmp+"entry") : element.Element("channel").Elements("item");
-                        foreach (var e in elements)
-                        {
-                            var post = new Post();
+                        var startTime = DateTime.UtcNow;
+                        // if (!isValidResponse(source))
+                        // {
+                        //     Console.Out.WriteLineAsync(string.Format("Source {0} is invalid.", source));
+                        //     continue;
+                        // }
 
-                            if (e.Name.LocalName == "entry")
+                        XDocument doc = XDocument.Load(source.RssUrl);
+
+               
+                        var endTime = DateTime.UtcNow;
+                        XNamespace Snmp = "http://www.w3.org/2005/Atom";
+
+                        foreach (var element in doc.Elements())
+                        {
+                            var elements = element.Element("channel") == null ? element.Descendants(Snmp+"entry") : element.Element("channel").Elements("item");
+                            foreach (var e in elements)
                             {
-                                post.Title = e.Element(Snmp + "title") == null ? "" : e.Element(Snmp + "title").Value;
-                                post.Category = e.Element(Snmp + "category") == null ? "" : e.Element(Snmp + "category").Value;
-                                post.ExternalUrl = e.Element(Snmp + "id") == null ? "" : e.Element(Snmp + "id").Value;
-                                var content = e.Element(Snmp + "content") == null ? "" : e.Element(Snmp + "content").Value;
-                                post.Description = ContentPreprocessing(content, post.ExternalUrl); 
-                                post.Source = source.Name;
-                                post.SourceUrl = GetSourceUrl(source.Name);
-                                post.SourceLogo = GetSourceLogoPath(source.Name);
-                                var slug = post.Title.Replace(" ", "-");
-                                slug = Regex.Replace(slug, "[^0-9a-zA-Z-,]+", "").ToLower();
-                                post.Slug = slug;
-                                //post.Image = e.Element("enclosure") == null
-                                //    ? ""
-                                //    : e.Element("enclosure").Attribute("url").Value;
-                                post.Image = GetThumbnail(post.Description, "entry");
-                                post.PublishDatetime = e.Element(Snmp + "published") == null ? "" : Convert.ToDateTime(e.Element(Snmp + "published").Value, CultureInfo.CurrentCulture).ToString();
+                                var post = new Post();
+
+                                if (e.Name.LocalName == "entry")
+                                {
+                                    post.Title = e.Element(Snmp + "title") == null ? "" : e.Element(Snmp + "title").Value;
+                                    post.Category = e.Element(Snmp + "category") == null ? "" : e.Element(Snmp + "category").Value;
+                                    post.ExternalUrl = e.Element(Snmp + "id") == null ? "" : e.Element(Snmp + "id").Value;
+                                    var content = e.Element(Snmp + "content") == null ? "" : e.Element(Snmp + "content").Value;
+                                    post.Description = ContentPreprocessing(content, post.ExternalUrl); 
+                                    post.Source = source.Name;
+                                    post.SourceUrl = GetSourceUrl(source.Name);
+                                    post.SourceLogo = GetSourceLogoPath(source.Name);
+                                    var slug = post.Title.Replace(" ", "-");
+                                    slug = Regex.Replace(slug, "[^0-9a-zA-Z-,]+", "").ToLower();
+                                    post.Slug = slug;
+                                    //post.Image = e.Element("enclosure") == null
+                                    //    ? ""
+                                    //    : e.Element("enclosure").Attribute("url").Value;
+                                    post.Image = GetThumbnail(post.Description, "entry");
+                                    post.PublishDatetime = e.Element(Snmp + "published") == null ? "" : Convert.ToDateTime(e.Element(Snmp + "published").Value, CultureInfo.CurrentCulture).ToString();
+                                }
+                                else
+                                {
+                                    post.Title = e.Element("title") == null ? "" : e.Element("title").Value;
+                                    post.Category = e.Element("category") == null ? "" : e.Element("category").Value;
+                                    post.ExternalUrl = e.Element("link") == null ? "" : e.Element("link").Value;
+                                    var content = e.Element("description") == null ? "" : e.Element("description").Value;
+                                    post.Description = ContentPreprocessing(content, post.ExternalUrl);
+                                    post.Source = source.Name;
+                                    post.SourceUrl = GetSourceUrl(source.Name);
+                                    post.SourceLogo = GetSourceLogoPath(source.Name);
+                                    var slug = post.Title.Replace(" ", "-");
+                                    slug = Regex.Replace(slug, "[^0-9a-zA-Z-,]+", "").ToLower();
+                                    post.Slug = slug;
+                                    //post.Image = e.Element("enclosure") == null
+                                    //    ? ""
+                                    //    : e.Element("enclosure").Attribute("url").Value;
+                                    post.Image = GetThumbnail(e.ToString());
+                                    post.PublishDatetime = e.Element("pubDate") == null ? "" : Convert.ToDateTime(e.Element("pubDate").Value, CultureInfo.CurrentCulture).ToString();
+                                }
+                                post.AddedOn = DateTime.UtcNow;
+                                post.Datetime = Convert.ToDateTime(post.PublishDatetime).ToUniversalTime();
+                                news.Add(post);
                             }
-                            else
-                            {
-                                post.Title = e.Element("title") == null ? "" : e.Element("title").Value;
-                                post.Category = e.Element("category") == null ? "" : e.Element("category").Value;
-                                post.ExternalUrl = e.Element("link") == null ? "" : e.Element("link").Value;
-                                var content = e.Element("description") == null ? "" : e.Element("description").Value;
-                                post.Description = ContentPreprocessing(content, post.ExternalUrl);
-                                post.Source = source.Name;
-                                post.SourceUrl = GetSourceUrl(source.Name);
-                                post.SourceLogo = GetSourceLogoPath(source.Name);
-                                var slug = post.Title.Replace(" ", "-");
-                                slug = Regex.Replace(slug, "[^0-9a-zA-Z-,]+", "").ToLower();
-                                post.Slug = slug;
-                                //post.Image = e.Element("enclosure") == null
-                                //    ? ""
-                                //    : e.Element("enclosure").Attribute("url").Value;
-                                post.Image = GetThumbnail(e.ToString());
-                                post.PublishDatetime = e.Element("pubDate") == null ? "" : Convert.ToDateTime(e.Element("pubDate").Value, CultureInfo.CurrentCulture).ToString();
-                            }
-                            post.AddedOn = DateTime.UtcNow;
-                            post.Datetime = Convert.ToDateTime(post.PublishDatetime).ToUniversalTime();
-                            news.Add(post);
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError("Oops..Exception!", ex);
+                        //throw ex;
+                        continue;
                     }
                 }
                 _logger.LogInformation("Parsing news xmls Succeeded.");
 
                 return news;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Oops..Exception!", ex);
-                throw ex;
-            }
+         
         }
 
         private bool isValidResponse(string url) {
