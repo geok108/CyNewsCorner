@@ -172,13 +172,15 @@ namespace CyNewsCorner
                     try
                     {
                         var startTime = DateTime.UtcNow;
-                        // if (!isValidResponse(source))
-                        // {
-                        //     Console.Out.WriteLineAsync(string.Format("Source {0} is invalid.", source));
-                        //     continue;
-                        // }
-
-                        XDocument doc = XDocument.Load(source.RssUrl);
+                    // if (!isValidResponse(source))
+                    // {
+                    //     Console.Out.WriteLineAsync(string.Format("Source {0} is invalid.", source));
+                    //     continue;
+                    // }
+                        var task = Task.Run(() => XDocument.Load(source.RssUrl));
+                        if (!task.Wait(TimeSpan.FromSeconds(5)))
+                            continue;
+                        XDocument doc = task.Result;
 
                
                         var endTime = DateTime.UtcNow;
@@ -353,7 +355,7 @@ namespace CyNewsCorner
             }
 
             if (imgUrl.Length < 2) {
-                return "";
+                return "default.png";
             }
             return imgUrl[1].Split("\"")[0];
         }  
@@ -362,13 +364,13 @@ namespace CyNewsCorner
 
             if(elName != "entry")
             {
-                return "";
+                return "default.png";
             }
         
             var imgUrl = item.Split("src=\"");
 
             if (imgUrl.Length < 2) {
-                return "";
+                return "default.png";
             }
             return imgUrl[1].Split("\"")[0];
         }
@@ -392,14 +394,14 @@ namespace CyNewsCorner
             {
                 var prs = new HtmlParser();
                 var sw = new StringWriter();
-                content = content.Substring(0, 1500);
+                content = content.Substring(0, 1000);
                 content = content.Insert(content.Length, "...</p>");
                 var cont = prs.ParseDocument(content);
                 cont.ToHtml(sw, new PrettyMarkupFormatter());
                 content = cont.Body.InnerHtml;
             }
 
-            content = content.Insert(content.Length, "</br><a href=" + url + "><div class=" + "btn btn-success" + ">Read More...</div></a>");
+            content = content.Insert(content.Length, "</br><a href=" + url + "><div>Read More...</div></a>");
 
             return content;
         }
